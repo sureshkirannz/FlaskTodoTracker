@@ -1,20 +1,36 @@
-{% if is_checkout %}Visitor Check-out{% else %}Visitor Check-in{% endif %} Notification
+{{ 'VISITOR CHECK-OUT' if is_checkout else 'VISITOR CHECK-IN' }} NOTIFICATION
+===============================================================
 
 Hello {{ host.first_name }},
 
-{% if is_checkout %}Your visitor has checked out:{% else %}A visitor has arrived to see you:{% endif %}
+{% if is_checkout %}
+Your visitor has checked out from {{ organization.name }}:
+{% else %}
+A visitor has checked in to see you at {{ organization.name }}:
+{% endif %}
 
+VISITOR DETAILS:
+---------------
 Name: {{ visitor.first_name }} {{ visitor.last_name }}
 {% if visitor.company %}Company: {{ visitor.company }}{% endif %}
+{% if visitor.email %}Email: {{ visitor.email }}{% endif %}
+{% if visitor.phone %}Phone: {{ visitor.phone }}{% endif %}
 Purpose: {{ checkin.purpose }}
-Check-in Time: {{ checkin.check_in_time|format_datetime }}
-{% if is_checkout %}Check-out Time: {{ checkin.check_out_time|format_datetime }}
-Duration: {{ duration }}{% endif %}
+Check-in Time: {{ checkin.check_in_time.strftime('%Y-%m-%d %H:%M') }}
+{% if is_checkout and checkin.check_out_time %}
+Check-out Time: {{ checkin.check_out_time.strftime('%Y-%m-%d %H:%M') }}
+{% if duration %}Duration: {{ duration }}{% endif %}
+{% endif %}
 
-{% if not is_checkout %}Please greet your visitor at the reception area.{% endif %}
+{% if not is_checkout %}
+Please greet your visitor at the reception area.
+
+To view visitor details, visit: {{ url_for('visitor.visitors', _external=True) }}
+{% endif %}
 
 Thank you,
 {{ organization.name }} Visitor Management System
 
+===============================================================
 © {{ current_year }} {{ organization.name }}. All rights reserved.
-This email was sent through Visitor Management System.
+This is an automated message. Please do not reply to this email.

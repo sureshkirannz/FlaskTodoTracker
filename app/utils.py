@@ -24,8 +24,23 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def send_email(subject, recipients, text_body, html_body, sender=None):
-    """Send an email"""
+def send_email(subject, recipients, text_body, html_body, sender=None, cc=None, bcc=None, attachments=None):
+    """
+    Send an email with optional cc, bcc, and attachments
+    
+    Args:
+        subject (str): Email subject
+        recipients (list): List of recipients
+        text_body (str): Plain text email body
+        html_body (str): HTML email body
+        sender (str, optional): Email sender. Defaults to config MAIL_DEFAULT_SENDER.
+        cc (list, optional): List of cc recipients
+        bcc (list, optional): List of bcc recipients
+        attachments (list, optional): List of attachment dicts with keys 'filename', 'content_type', and 'data'
+    
+    Returns:
+        bool: True if email was sent successfully, False otherwise
+    """
     if not sender:
         sender = current_app.config['MAIL_DEFAULT_SENDER']
         
@@ -33,10 +48,30 @@ def send_email(subject, recipients, text_body, html_body, sender=None):
     msg.body = text_body
     msg.html = html_body
     
+    # Add CC recipients if provided
+    if cc:
+        msg.cc = cc
+        
+    # Add BCC recipients if provided
+    if bcc:
+        msg.bcc = bcc
+        
+    # Add attachments if provided
+    if attachments:
+        for attachment in attachments:
+            msg.attach(
+                filename=attachment['filename'],
+                content_type=attachment['content_type'],
+                data=attachment['data']
+            )
+    
     # Log the email
     log_action('email_sent', {
         'to': recipients,
-        'subject': subject
+        'subject': subject,
+        'cc': cc,
+        'bcc': bcc,
+        'has_attachments': bool(attachments)
     })
     
     try:
@@ -45,6 +80,26 @@ def send_email(subject, recipients, text_body, html_body, sender=None):
     except Exception as e:
         print(f"Error sending email: {str(e)}")
         return False
+
+def send_welcome_email(user, organization):
+    """Send welcome email to newly registered user"""
+    login_url = url_for('auth.login', _external=True)
+    current_year = datetime.utcnow().year
+    
+    send_email(
+        subject=f'Welcome to {organization.name} Visitor Management System',
+        recipients=[user.email],
+        text_body=render_template('email/welcome.txt',
+                                  user=user,
+                                  organization=organization,
+                                  url=login_url,
+                                  current_year=current_year),
+        html_body=render_template('email/welcome.html',
+                                  user=user,
+                                  organization=organization,
+                                  url=login_url,
+                                  current_year=current_year)
+    )
 
 def send_password_reset_email(user):
     """Send password reset email"""
@@ -64,61 +119,16 @@ def send_password_reset_email(user):
 
 def send_checkin_notification(checkin):
     """Send email notification for visitor check-in"""
-    organization = Organization.query.get(checkin.visitor.organization_id)
-    if not organization.enable_email_notifications:
-        return
-    
-    # Get host staff member
-    host = checkin.host
-    if not host or not host.email:
-        return
-    
-    # Get email template
-    template = EmailTemplate.query.filter_by(
-        organization_id=organization.id,
-        template_type='check_in'
-    ).first()
-    
-    if not template:
-        return
-    
-    # Format datetime
-    check_in_time = checkin.check_in_time.strftime('%Y-%m-%d %H:%M')
-    
-    # Prepare context for template rendering
-    context = {
-        'visitor_name': f"{checkin.visitor.first_name} {checkin.visitor.last_name}",
-        'visitor_email': checkin.visitor.email,
-        'visitor_company': checkin.visitor.company,
-        'visitor_purpose': checkin.purpose,
-        'check_in_time': check_in_time,
-        'host_name': f"{host.first_name} {host.last_name}",
-        'organization_name': organization.name
-    }
-    
-    # Replace placeholders in template
-    subject = template.subject
-    body = template.body
-    
-    for key, value in context.items():
-        placeholder = '{{' + key + '}}'
-        if value:
-            subject = subject.replace(placeholder, value)
-            body = body.replace(placeholder, value)
-        else:
-            subject = subject.replace(placeholder, '')
-            body = body.replace(placeholder, '')
-    
-    # Send email
-    send_email(
-        subject=subject,
-        recipients=[host.email],
-        text_body=body,
-        html_body=body
-    )
+    send_visitor_notification(checkin, is_checkout=False)
 
-def send_checkout_notification(checkin):
-    """Send email notification for visitor check-out"""
+def send_visitor_notification(checkin, is_checkout=False):
+    """
+    Send email notification for visitor check-in or check-out
+    
+    Args:
+        checkin: The CheckIn model instance
+        is_checkout: Boolean indicating if this is a checkout notification (default: False)
+    """
     organization = Organization.query.get(checkin.visitor.organization_id)
     if not organization.enable_email_notifications:
         return
@@ -128,60 +138,92 @@ def send_checkout_notification(checkin):
     if not host or not host.email:
         return
     
-    # Get email template
-    template = EmailTemplate.query.filter_by(
-        organization_id=organization.id,
-        template_type='check_out'
-    ).first()
-    
-    if not template:
-        return
-    
-    # Format datetime
-    check_in_time = checkin.check_in_time.strftime('%Y-%m-%d %H:%M')
-    check_out_time = checkin.check_out_time.strftime('%Y-%m-%d %H:%M') if checkin.check_out_time else 'Not checked out'
-    
-    # Calculate duration
+    # Calculate duration for checkout
     duration = ''
-    if checkin.check_out_time and checkin.check_in_time:
+    if is_checkout and checkin.check_out_time and checkin.check_in_time:
         delta = checkin.check_out_time - checkin.check_in_time
         hours, remainder = divmod(delta.seconds, 3600)
         minutes, _ = divmod(remainder, 60)
         duration = f"{hours} hours, {minutes} minutes"
     
-    # Prepare context for template rendering
-    context = {
-        'visitor_name': f"{checkin.visitor.first_name} {checkin.visitor.last_name}",
-        'visitor_email': checkin.visitor.email,
-        'visitor_company': checkin.visitor.company,
-        'visitor_purpose': checkin.purpose,
-        'check_in_time': check_in_time,
-        'check_out_time': check_out_time,
-        'duration': duration,
-        'host_name': f"{host.first_name} {host.last_name}",
-        'organization_name': organization.name
-    }
+    # Get template from database or use default
+    template_type = 'check_out' if is_checkout else 'check_in'
+    template = EmailTemplate.query.filter_by(
+        organization_id=organization.id,
+        template_type=template_type
+    ).first()
     
-    # Replace placeholders in template
-    subject = template.subject
-    body = template.body
-    
-    for key, value in context.items():
-        placeholder = '{{' + key + '}}'
-        if value:
-            subject = subject.replace(placeholder, value)
-            body = body.replace(placeholder, value)
+    if template:
+        # Use custom template from database
+        # Format datetime
+        check_in_time = checkin.check_in_time.strftime('%Y-%m-%d %H:%M')
+        check_out_time = checkin.check_out_time.strftime('%Y-%m-%d %H:%M') if checkin.check_out_time else 'Not checked out'
+        
+        # Prepare context for template rendering
+        context = {
+            'visitor_name': f"{checkin.visitor.first_name} {checkin.visitor.last_name}",
+            'visitor_email': checkin.visitor.email or '',
+            'visitor_company': checkin.visitor.company or '',
+            'visitor_purpose': checkin.purpose,
+            'check_in_time': check_in_time,
+            'check_out_time': check_out_time,
+            'duration': duration,
+            'host_name': f"{host.first_name} {host.last_name}",
+            'organization_name': organization.name
+        }
+        
+        # Replace placeholders in template
+        subject = template.subject
+        body = template.body
+        
+        for key, value in context.items():
+            placeholder = '{{' + key + '}}'
+            if value:
+                subject = subject.replace(placeholder, value)
+                body = body.replace(placeholder, value)
+            else:
+                subject = subject.replace(placeholder, '')
+                body = body.replace(placeholder, '')
+                
+        send_email(
+            subject=subject,
+            recipients=[host.email],
+            text_body=body,
+            html_body=body
+        )
+    else:
+        # Use built-in template
+        current_year = datetime.utcnow().year
+        
+        if is_checkout:
+            subject = f"Visitor Check-out: {checkin.visitor.first_name} {checkin.visitor.last_name} has departed"
         else:
-            subject = subject.replace(placeholder, '')
-            body = body.replace(placeholder, '')
-    
-    # Send email
-    send_email(
-        subject=subject,
-        recipients=[host.email],
-        text_body=body,
-        html_body=body
-    )
+            subject = f"Visitor Check-in: {checkin.visitor.first_name} {checkin.visitor.last_name} has arrived"
+            
+        send_email(
+            subject=subject,
+            recipients=[host.email],
+            text_body=render_template('email/visit_notification.txt',
+                                     visitor=checkin.visitor,
+                                     checkin=checkin,
+                                     host=host,
+                                     organization=organization,
+                                     is_checkout=is_checkout,
+                                     duration=duration,
+                                     current_year=current_year),
+            html_body=render_template('email/visit_notification.html',
+                                     visitor=checkin.visitor,
+                                     checkin=checkin,
+                                     host=host,
+                                     organization=organization,
+                                     is_checkout=is_checkout,
+                                     duration=duration,
+                                     current_year=current_year)
+        )
+
+def send_checkout_notification(checkin):
+    """Send email notification for visitor check-out"""
+    send_visitor_notification(checkin, is_checkout=True)
 
 def encode_image(image_file):
     """Encode an image file to base64"""

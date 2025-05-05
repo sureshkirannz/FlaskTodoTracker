@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Visitor Kiosk - {{ organization.name }}</title>
+    <title>Visitor Kiosk - Welcome</title>
     
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
@@ -20,51 +20,108 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👋</text></svg>">
     
     <style>
-        :root {
-            --primary-color: {{ organization.primary_color or '#007bff' }};
-            --secondary-color: {{ organization.secondary_color or '#6c757d' }};
+        .org-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .org-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .org-logo {
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+        }
+        
+        .org-logo-placeholder {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 3rem;
+            color: var(--bs-primary);
+        }
+        
+        .org-card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .org-card-body .btn {
+            margin-top: auto;
         }
     </style>
 </head>
 <body class="kiosk-mode">
     <div class="kiosk-container">
-        <div class="kiosk-header" style="background-color: var(--primary-color);">
-            {% if organization.logo %}
-            <img src="data:image/png;base64,{{ organization.logo }}" alt="{{ organization.name }}" class="kiosk-logo">
-            {% else %}
-            <h2>{{ organization.name }}</h2>
-            {% endif %}
+        <div class="kiosk-header">
+            <h2>Visitor Management System</h2>
             
             <div id="kiosk-clock" class="kiosk-clock"></div>
             
-            <button id="exit-kiosk-btn" class="kiosk-exit-button">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
+            <a href="{{ url_for('auth.login') }}" class="kiosk-exit-button">
+                <i class="fas fa-sign-in-alt"></i>
+            </a>
         </div>
         
         <div class="kiosk-body">
-            <h1 class="kiosk-title">Welcome to {{ organization.name }}</h1>
-            <h2 class="kiosk-subtitle">Visitor Management System</h2>
+            <h1 class="kiosk-title">Welcome to the Visitor Kiosk</h1>
             
-            <div class="kiosk-card">
-                <div class="row">
-                    <div class="col-md-6 text-center p-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-person-plus-fill text-primary mb-3" viewBox="0 0 16 16">
-                            <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                            <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
-                        </svg>
-                        <h3 class="mb-4">I'm Checking In</h3>
-                        <a href="{{ url_for('kiosk.checkin') }}" class="kiosk-button">Check In</a>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <h2 class="kiosk-subtitle">Please Select Your Organization</h2>
+            
+            <div class="container">
+                <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
+                    {% for org in organizations %}
+                    <div class="col">
+                        <div class="card org-card" style="border-color: {{ org.primary_color or '#007bff' }};">
+                            <div class="card-body org-card-body">
+                                {% if org.logo %}
+                                <img src="data:image/png;base64,{{ org.logo }}" alt="{{ org.name }}" class="org-logo">
+                                {% else %}
+                                <div class="org-logo-placeholder">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                {% endif %}
+                                
+                                <h3 class="card-title">{{ org.name }}</h3>
+                                
+                                {% if org.address %}
+                                <p class="card-text"><i class="fas fa-map-marker-alt me-2"></i>{{ org.address }}</p>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('kiosk.organization', org_id=org.id) }}" class="btn btn-primary mt-3">
+                                    Select
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="col-md-6 text-center p-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-person-dash-fill text-secondary mb-3" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M11 7.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5z"/>
-                            <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                        </svg>
-                        <h3 class="mb-4">I'm Checking Out</h3>
-                        <a href="{{ url_for('kiosk.checkout') }}" class="kiosk-button secondary">Check Out</a>
+                    {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <h4 class="alert-heading">No Organizations Available</h4>
+                            <p>There are currently no active organizations in the system.</p>
+                            <hr>
+                            <p class="mb-0">Please contact the system administrator for assistance.</p>
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
             
@@ -76,31 +133,7 @@
         </div>
         
         <div class="kiosk-footer">
-            <p>© {{ now().year }} {{ organization.name }} - Visitor Management System</p>
-        </div>
-    </div>
-    
-    <!-- Exit Kiosk Modal -->
-    <div class="modal fade" id="exitKioskModal" tabindex="-1" aria-labelledby="exitKioskModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exitKioskModalLabel">Exit Kiosk Mode</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Please enter the passcode to exit kiosk mode:</p>
-                    <form id="exit-kiosk-form" action="{{ url_for('kiosk.exit_kiosk') }}" method="POST">
-                        <div class="mb-3">
-                            <input type="password" class="form-control kiosk-passcode-input" name="passcode" id="kiosk-passcode" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="exit-kiosk-form" class="btn btn-primary">Exit Kiosk</button>
-                </div>
-            </div>
+            <p>© {{ now().year }} Visitor Management System</p>
         </div>
     </div>
     
@@ -109,5 +142,35 @@
     
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/kiosk.js') }}"></script>
+    
+    <script>
+    // Update the clock
+    function updateClock() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}:${seconds}`;
+        
+        document.getElementById('kiosk-clock').textContent = timeString;
+    }
+    
+    // Update the clock every second
+    setInterval(updateClock, 1000);
+    updateClock(); // Initial update
+    
+    // Handle fullscreen
+    document.getElementById('enter-fullscreen').addEventListener('click', function() {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) {
+            document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+            document.documentElement.msRequestFullscreen();
+        }
+    });
+    </script>
 </body>
 </html>
