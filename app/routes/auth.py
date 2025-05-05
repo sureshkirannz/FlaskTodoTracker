@@ -72,7 +72,10 @@ def register():
         # Create default badge template
         create_default_badge_template(organization.id)
         
-        flash('Your account has been created! You can now log in.', 'success')
+        # Send welcome email
+        send_welcome_email(user, organization)
+        
+        flash('Your account has been created! You can now log in. A welcome email has been sent to your email address.', 'success')
         return redirect(url_for('auth.login'))
     
     return render_template('auth/register.html', title='Register', form=form)

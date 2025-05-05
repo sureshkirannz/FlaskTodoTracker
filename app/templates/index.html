@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Management System</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bs-dark);
+            color: white;
+        }
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1606857521015-7f9fcf423740?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 6rem 0;
+            position: relative;
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--bs-primary);
+        }
+        .footer {
+            margin-top: auto;
+            padding: 2rem 0;
+            background-color: var(--bs-dark);
+        }
+    </style>
+</head>
+<body data-bs-theme="dark">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-id-card me-2"></i>
+                Visitor Management System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pricing">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary ms-lg-3" href="{{ url_for('auth.login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-primary ms-lg-2" href="{{ url_for('auth.register') }}">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">Welcome to Visitor Management System</h1>
+            <p class="lead mb-5">A comprehensive solution for managing visitors to your organization. Streamline check-ins, improve security, and enhance the visitor experience.</p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4 gap-3">Get Started</a>
+                <a href="#features" class="btn btn-outline-light btn-lg px-4">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5" id="features">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Key Features</h2>
+                <p class="lead">Everything you need to manage visitors efficiently</p>
+            </div>
+            <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-3">
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <h3 class="card-title h5">Easy Check-In</h3>
+                            <p class="card-text">Simple and fast check-in process with customizable fields and photo capture.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <h3 class="card-title h5">Instant Notifications</h3>
+                            <p class="card-text">Automatic email notifications to staff when their visitors arrive.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-id-badge"></i>
+                            </div>
+                            <h3 class="card-title h5">Badge Printing</h3>
+                            <p class="card-text">Create and print customized visitor badges with your organization's branding.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h3 class="card-title h5">Analytics</h3>
+                            <p class="card-text">Detailed reports and analytics on visitor traffic and patterns.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h3 class="card-title h5">Preregistration</h3>
+                            <p class="card-text">Pre-register expected visitors for a faster check-in experience.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-desktop"></i>
+                            </div>
+                            <h3 class="card-title h5">Kiosk Mode</h3>
+                            <p class="card-text">Dedicated kiosk interface for self-check-in by visitors.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="py-5 bg-secondary" id="pricing">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Pricing Plans</h2>
+                <p class="lead">Choose the plan that fits your organization's needs</p>
+            </div>
+            <div class="row g-4 row-cols-1 row-cols-md-3">
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header text-center bg-dark py-4">
+                            <h3 class="my-0 fw-normal">Free</h3>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title text-center">$0<small class="text-muted fw-light">/mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Up to 50 visitors per month</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Basic visitor check-in</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Email notifications</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> 1 staff account</li>
+                                <li class="mb-2"><i class="fas fa-times text-danger me-2"></i> Badge printing</li>
+                                <li class="mb-2"><i class="fas fa-times text-danger me-2"></i> Analytics</li>
+                            </ul>
+                            <div class="d-grid">
+                                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">Sign Up</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm border-primary">
+                        <div class="card-header text-center bg-primary py-4">
+                            <h3 class="my-0 fw-normal">Starter</h3>
+                            <span class="badge bg-warning">Popular</span>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title text-center">$29<small class="text-muted fw-light">/mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Up to 200 visitors per month</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Visitor photo capture</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Badge printing</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> 5 staff accounts</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Basic analytics</li>
+                                <li class="mb-2"><i class="fas fa-times text-danger me-2"></i> Document signing</li>
+                            </ul>
+                            <div class="d-grid">
+                                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Try Free for 14 Days</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header text-center bg-dark py-4">
+                            <h3 class="my-0 fw-normal">Professional</h3>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title text-center">$99<small class="text-muted fw-light">/mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Unlimited visitors</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Document signing</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Custom badge templates</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Unlimited staff accounts</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Advanced analytics</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Priority support</li>
+                            </ul>
+                            <div class="d-grid">
+                                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">Contact Sales</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer text-center">
+        <div class="container">
+            <p class="mb-0">&copy; {{ now().year }} Visitor Management System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS and Font Awesome -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+</body>
+</html>

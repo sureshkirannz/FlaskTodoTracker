@@ -1,0 +1,20 @@
+{% if is_checkout %}Visitor Check-out{% else %}Visitor Check-in{% endif %} Notification
+
+Hello {{ host.first_name }},
+
+{% if is_checkout %}Your visitor has checked out:{% else %}A visitor has arrived to see you:{% endif %}
+
+Name: {{ visitor.first_name }} {{ visitor.last_name }}
+{% if visitor.company %}Company: {{ visitor.company }}{% endif %}
+Purpose: {{ checkin.purpose }}
+Check-in Time: {{ checkin.check_in_time|format_datetime }}
+{% if is_checkout %}Check-out Time: {{ checkin.check_out_time|format_datetime }}
+Duration: {{ duration }}{% endif %}
+
+{% if not is_checkout %}Please greet your visitor at the reception area.{% endif %}
+
+Thank you,
+{{ organization.name }} Visitor Management System
+
+© {{ current_year }} {{ organization.name }}. All rights reserved.
+This email was sent through Visitor Management System.
