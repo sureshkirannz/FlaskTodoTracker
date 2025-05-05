@@ -9,8 +9,12 @@ kiosk = Blueprint('kiosk', __name__, url_prefix='/kiosk')
 
 @kiosk.route('/')
 def index():
-    """Kiosk mode landing page"""
-    return render_template('kiosk/index.html', title='Visitor Kiosk')
+    """Kiosk mode landing page - organization selection"""
+    # Get all organizations
+    organizations = Organization.query.all()
+    return render_template('kiosk/select_organization.html', 
+                          title='Visitor Kiosk', 
+                          organizations=organizations)
 
 @kiosk.route('/<int:org_id>')
 def organization(org_id):
