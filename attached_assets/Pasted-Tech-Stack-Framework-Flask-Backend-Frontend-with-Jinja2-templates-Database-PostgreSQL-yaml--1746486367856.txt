@@ -1,0 +1,208 @@
+Tech Stack:
+Framework: Flask (Backend + Frontend with Jinja2 templates)
+
+Database: PostgreSQL
+
+yaml
+Copy
+Edit
+Host: 159.13.60.81
+Port: 5432
+Username: postgres
+Password: 1234567
+Database: VisitorManagement
+Email:
+
+python
+Copy
+Edit
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = 'trackmyvisitor@gmail.com'
+app.config['MAIL_PASSWORD'] = 'bhqpmertdzkewxkr'
+app.config['MAIL_DEFAULT_SENDER'] = 'support@trackmyvisitor.com'
+Payments: Stripe
+
+nginx
+Copy
+Edit
+sk_test_51R4rEfPpxpbhNGzt7O0CeO3eNeQ6R2oVxNEU9vbhhQaLS6wdsUe0r1fsHYGnaptLPitt5g8IZXyb5OUQN92Wc4bz00kIXHBVfp
+✅ Core Features:
+1️⃣ User & Organization Management:
+
+Users register under an organization.
+
+Each organization can:
+
+Upload logos & branding.
+
+Manage documents & settings.
+
+Configure badge/label templates.
+
+2️⃣ Modes:
+
+Kiosk Mode:
+
+Full-screen visitor check-in/check-out.
+
+Exit with passcode 0000.
+
+Normal Mode:
+
+Full admin functionality (reports, settings, staff management, etc.).
+
+3️⃣ Visitor & Badge Management:
+
+Check-in/out processes with:
+
+Photo capture (if enabled).
+
+Badge printing (if enabled).
+
+Auto check-out after 24 hours (if enabled).
+
+4️⃣ Workflow & Notifications:
+
+Customizable email templates (e.g., visitor arrival, departure).
+
+Print documents/badges.
+
+5️⃣ Subscription:
+
+Stripe-based payment and plan management.
+
+🗂️ Pages/Routes:
+1️⃣ Landing Page:
+
+/register
+
+/login
+
+/forgot-password
+
+2️⃣ Dashboard: /dashboard
+
+Visitor stats, active check-ins, and alerts.
+
+3️⃣ Reports: /reports
+
+Logs of visitors (check-in/out history), export options.
+
+4️⃣ Subscription: /subscription
+
+View/manage payment plans.
+
+5️⃣ Settings: /settings
+
+Manage:
+
+Printers
+
+Organization info
+
+Badge themes
+
+Email templates
+
+Kiosk mode setup
+
+6️⃣ Staff Management: /staff
+
+Add/edit/delete staff
+
+Bulk import via CSV/Excel
+
+7️⃣ Kiosk Mode: /kiosk
+
+Full-screen visitor-facing check-in/check-out.
+
+8️⃣ Preregistration: /preregister
+
+Pre-register visitors.
+
+9️⃣ Visitor Check-In/Check-Out:
+
+/checkin
+
+/checkout
+
+🏗️ Folder Structure:
+bash
+Copy
+Edit
+/app
+    /static
+        /css
+        /js
+        /img
+    /templates
+        /auth
+            login.html
+            register.html
+            forgot_password.html
+        /dashboard
+            index.html
+        /reports
+            index.html
+        /settings
+            index.html
+        /staff
+            index.html
+        /kiosk
+            index.html
+        /subscription
+            index.html
+        /visitor
+            checkin.html
+            checkout.html
+            preregister.html
+    /routes
+        __init__.py
+        auth.py
+        dashboard.py
+        reports.py
+        settings.py
+        staff.py
+        kiosk.py
+        subscription.py
+        visitor.py
+    models.py
+    forms.py
+    utils.py
+config.py
+run.py
+🔐 Security & Extras:
+Auth: Flask-Login & Flask-WTF for authentication & forms.
+
+Email: Flask-Mail for notifications.
+
+Payments: Flask-Stripe or manual Stripe API integration.
+
+Photo & Badge Print: Flask integration with webcam capture + printer (can use libraries like Pillow or pycups for local printing).
+
+Background Jobs: Consider Celery/Flask-APScheduler for auto-check-out logic.
+
+📊 Database Tables (Concept):
+users
+
+organizations
+
+visitors
+
+checkins
+
+badges
+
+staff
+
+subscriptions
+
+settings
+
+email_templates
+
+documents
+
+logs
