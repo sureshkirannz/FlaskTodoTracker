@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - Visitor Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1><i class="fas fa-cog me-2"></i> Settings</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="list-group settings-nav mb-4">
+            <a href="{{ url_for('settings.organization') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-building me-2"></i> Organization
+            </a>
+            <a href="{{ url_for('settings.email_templates') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-envelope me-2"></i> Email Templates
+            </a>
+            <a href="{{ url_for('settings.documents') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-file-alt me-2"></i> Documents
+            </a>
+            <a href="{{ url_for('settings.badge_template') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-id-card me-2"></i> Badge Templates
+            </a>
+            <a href="{{ url_for('settings.kiosk_settings') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-tablet-alt me-2"></i> Kiosk Settings
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i> Settings Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-building me-2"></i> Organization</h5>
+                                <p class="card-text">Configure your organization profile, logo, and contact information.</p>
+                                <a href="{{ url_for('settings.organization') }}" class="btn btn-outline-primary">Manage</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-envelope me-2"></i> Email Templates</h5>
+                                <p class="card-text">Customize notification emails for check-ins, check-outs and more.</p>
+                                <a href="{{ url_for('settings.email_templates') }}" class="btn btn-outline-primary">Manage</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-file-alt me-2"></i> Documents</h5>
+                                <p class="card-text">Manage documents such as NDAs, policies, and waivers for visitors.</p>
+                                <a href="{{ url_for('settings.documents') }}" class="btn btn-outline-primary">Manage</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-id-card me-2"></i> Badge Templates</h5>
+                                <p class="card-text">Customize visitor badge layouts and designs for printing.</p>
+                                <a href="{{ url_for('settings.badge_template') }}" class="btn btn-outline-primary">Manage</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-tablet-alt me-2"></i> Kiosk Settings</h5>
+                                <p class="card-text">Configure kiosk mode options including photo capture and badge printing.</p>
+                                <a href="{{ url_for('settings.kiosk_settings') }}" class="btn btn-outline-primary">Manage</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-credit-card me-2"></i> Subscription</h5>
+                                <p class="card-text">Manage your subscription plan and payment details.</p>
+                                <a href="{{ url_for('subscription.index') }}" class="btn btn-outline-primary">Manage</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i> Current Configuration</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th style="width: 200px;">Organization Name</th>
+                                <td>{{ organization.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Subscription Plan</th>
+                                <td>
+                                    <span class="badge {% if organization.subscription_plan == 'free' %}bg-secondary{% elif organization.subscription_plan == 'basic' %}bg-info{% elif organization.subscription_plan == 'premium' %}bg-primary{% else %}bg-success{% endif %}">
+                                        {{ organization.subscription_plan|capitalize }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Subscription Status</th>
+                                <td>
+                                    <span class="badge {% if organization.subscription_status == 'active' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ organization.subscription_status|capitalize }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Photo Capture</th>
+                                <td>
+                                    {% if organization.enable_photo_capture %}
+                                    <span class="badge bg-success">Enabled</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Disabled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Badge Printing</th>
+                                <td>
+                                    {% if organization.enable_badge_printing %}
+                                    <span class="badge bg-success">Enabled</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Disabled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Auto Check-out</th>
+                                <td>
+                                    {% if organization.enable_auto_checkout %}
+                                    <span class="badge bg-success">Enabled</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Disabled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Email Notifications</th>
+                                <td>
+                                    {% if organization.enable_email_notifications %}
+                                    <span class="badge bg-success">Enabled</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Disabled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

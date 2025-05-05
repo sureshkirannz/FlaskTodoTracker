@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Check-out Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #6c757d;
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px 0;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .visitor-details {
+            margin-bottom: 20px;
+        }
+        .visitor-details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .visitor-details table th {
+            text-align: left;
+            width: 40%;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .visitor-details table td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+            color: #777;
+            font-size: 12px;
+        }
+        @media only screen and (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Visitor Check-out Notification</h1>
+        </div>
+        
+        <div class="content">
+            <div class="info-box">
+                <p>Hello {% if host %}{{ host.first_name }}{% else %}Host{% endif %},</p>
+                <p>This is to inform you that your visitor has checked out.</p>
+            </div>
+            
+            <div class="visitor-details">
+                <h3>Visitor Details:</h3>
+                <table>
+                    <tr>
+                        <th>Name:</th>
+                        <td>{{ visitor.first_name }} {{ visitor.last_name }}</td>
+                    </tr>
+                    {% if visitor.company %}
+                    <tr>
+                        <th>Company:</th>
+                        <td>{{ visitor.company }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if visitor.email %}
+                    <tr>
+                        <th>Email:</th>
+                        <td>{{ visitor.email }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th>Check-in Time:</th>
+                        <td>{{ checkin.check_in_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Check-out Time:</th>
+                        <td>{{ checkin.check_out_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Duration:</th>
+                        <td>
+                            {% set duration = checkin.check_out_time - checkin.check_in_time %}
+                            {% set hours = duration.seconds // 3600 %}
+                            {% set minutes = (duration.seconds % 3600) // 60 %}
+                            {{ hours }} hour(s) {{ minutes }} minute(s)
+                        </td>
+                    </tr>
+                    {% if checkin.purpose %}
+                    <tr>
+                        <th>Purpose:</th>
+                        <td>{{ checkin.purpose }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+            
+            <p>Thank you for using our Visitor Management System.</p>
+            
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message from the Visitor Management System.</p>
+            <p>&copy; {{ checkin.check_out_time.year }} {{ organization.name }}. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

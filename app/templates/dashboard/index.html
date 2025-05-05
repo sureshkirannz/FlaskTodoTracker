@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Visitor Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1><i class="fas fa-tachometer-alt me-2"></i> Dashboard</h1>
+    <div>
+        <a href="{{ url_for('visitor.checkin') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i> Check-In Visitor
+        </a>
+        <a href="{{ url_for('visitor.active_visitors') }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-users me-2"></i> Active Visitors
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card h-100 card-dashboard text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-users me-2"></i> Active Visitors</h5>
+                <h2 class="display-4 fw-bold">{{ stats.active_checkins }}</h2>
+                <p class="card-text">Currently checked in</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 card-dashboard text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-calendar-day me-2"></i> Today</h5>
+                <h2 class="display-4 fw-bold">{{ stats.today_checkins }}</h2>
+                <p class="card-text">Visitors today</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 card-dashboard text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-calendar-week me-2"></i> Monthly</h5>
+                <h2 class="display-4 fw-bold">{{ stats.month_checkins }}</h2>
+                <p class="card-text">Visitors this month</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 card-dashboard text-white bg-secondary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-user-tie me-2"></i> Staff</h5>
+                <h2 class="display-4 fw-bold">{{ stats.total_staff }}</h2>
+                <p class="card-text">Registered staff</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Visitor Statistics</h5>
+                <a href="{{ url_for('reports.index') }}" class="btn btn-sm btn-outline-primary">View Full Reports</a>
+            </div>
+            <div class="card-body">
+                <canvas id="visitorsChart" height="250"></canvas>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i> Recent Check-ins</h5>
+                <a href="{{ url_for('visitor.active_visitors') }}" class="btn btn-sm btn-outline-primary">View All Active</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Visitor</th>
+                                <th>Purpose</th>
+                                <th>Host</th>
+                                <th>Check-in Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for checkin in recent_checkins %}
+                            <tr>
+                                <td>
+                                    {% if checkin.visitor.photo %}
+                                    <img src="data:image/png;base64,{{ checkin.visitor.photo }}" alt="{{ checkin.visitor.first_name }}" class="visitor-photo me-2" width="30" height="30">
+                                    {% endif %}
+                                    {{ checkin.visitor.first_name }} {{ checkin.visitor.last_name }}
+                                </td>
+                                <td>{{ checkin.purpose }}</td>
+                                <td>
+                                    {% if checkin.host %}
+                                    {{ checkin.host.first_name }} {{ checkin.host.last_name }}
+                                    {% else %}
+                                    Not specified
+                                    {% endif %}
+                                </td>
+                                <td>{{ checkin.check_in_time.strftime('%H:%M, %d %b %Y') }}</td>
+                                <td>
+                                    {% if checkin.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Checked Out</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">No recent check-ins</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-building me-2"></i> Organization</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    {% if organization.logo %}
+                    <img src="data:image/png;base64,{{ organization.logo }}" alt="{{ organization.name }}" class="img-fluid mb-3" style="max-height: 100px;">
+                    {% else %}
+                    <div class="bg-light p-3 rounded mb-3">
+                        <i class="fas fa-building fa-3x text-secondary"></i>
+                    </div>
+                    {% endif %}
+                    <h4>{{ organization.name }}</h4>
+                    <p class="text-muted">
+                        {% if organization.contact_email %}
+                        <i class="fas fa-envelope me-1"></i> {{ organization.contact_email }}<br>
+                        {% endif %}
+                        {% if organization.contact_phone %}
+                        <i class="fas fa-phone me-1"></i> {{ organization.contact_phone }}
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('kiosk.index', org_id=organization.id) }}" class="btn btn-primary" target="_blank">
+                        <i class="fas fa-tablet-alt me-2"></i> Launch Kiosk Mode
+                    </a>
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('settings.organization') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-cog me-2"></i> Organization Settings
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('visitor.preregister') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-calendar-plus me-2"></i> Preregister a Visitor
+                    </a>
+                    <a href="{{ url_for('staff.add_staff') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user-plus me-2"></i> Add Staff Member
+                    </a>
+                    <a href="{{ url_for('reports.index') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-export me-2"></i> Export Reports
+                    </a>
+                    <a href="{{ url_for('visitor.list_visitors') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-address-book me-2"></i> View All Visitors
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const visitorsChartCanvas = document.getElementById('visitorsChart');
+        if (visitorsChartCanvas) {
+            const visitorsChart = new Chart(visitorsChartCanvas, {
+                type: 'line',
+                data: {
+                    labels: ['6 days ago', '5 days ago', '4 days ago', '3 days ago', '2 days ago', 'Yesterday', 'Today'],
+                    datasets: [{
+                        label: 'Visitor Check-ins',
+                        data: [
+                            {{ stats.month_checkins // 7 }}, 
+                            {{ stats.month_checkins // 6 }}, 
+                            {{ stats.month_checkins // 5 }}, 
+                            {{ stats.month_checkins // 4 }}, 
+                            {{ stats.month_checkins // 3 }},
+                            {{ stats.yesterday_checkins }},
+                            {{ stats.today_checkins }}
+                        ],
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

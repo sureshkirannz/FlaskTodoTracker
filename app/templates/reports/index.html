@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports - Visitor Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1><i class="fas fa-chart-bar me-2"></i> Visitor Reports</h1>
+    <div>
+        <a href="{{ url_for('reports.index', export='csv') }}" class="btn btn-success">
+            <i class="fas fa-file-export me-2"></i> Export to CSV
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i> Filter Reports</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('reports.index') }}" class="row g-3">
+            {{ form.hidden_tag() }}
+            
+            <div class="col-md-3">
+                <label for="start_date" class="form-label">{{ form.start_date.label }}</label>
+                {{ form.start_date(class="form-control datepicker", id="start_date", value=start_date) }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="end_date" class="form-label">{{ form.end_date.label }}</label>
+                {{ form.end_date(class="form-control datepicker", id="end_date", value=end_date) }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="staff_id" class="form-label">{{ form.staff_id.label }}</label>
+                {{ form.staff_id(class="form-select", id="staff_id") }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="purpose" class="form-label">{{ form.purpose.label }}</label>
+                {{ form.purpose(class="form-control", id="purpose") }}
+            </div>
+            
+            <div class="col-12 text-end">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary ms-2">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i> Visitor Log</h5>
+        <div class="input-group" style="width: 300px;">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control" id="tableFilter" placeholder="Search visitors...">
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover filterable-table">
+                <thead>
+                    <tr>
+                        <th>Visitor</th>
+                        <th>Company</th>
+                        <th>Purpose</th>
+                        <th>Host</th>
+                        <th>Check-In Time</th>
+                        <th>Check-Out Time</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for checkin in checkins %}
+                    <tr>
+                        <td>
+                            {% if checkin.visitor.photo %}
+                            <img src="data:image/png;base64,{{ checkin.visitor.photo }}" alt="{{ checkin.visitor.first_name }}" class="rounded-circle me-2" width="30" height="30">
+                            {% endif %}
+                            {{ checkin.visitor.first_name }} {{ checkin.visitor.last_name }}
+                        </td>
+                        <td>{{ checkin.visitor.company or 'N/A' }}</td>
+                        <td>{{ checkin.purpose }}</td>
+                        <td>
+                            {% if checkin.host %}
+                            {{ checkin.host.first_name }} {{ checkin.host.last_name }}
+                            {% else %}
+                            Not specified
+                            {% endif %}
+                        </td>
+                        <td>{{ checkin.check_in_time.strftime('%H:%M, %d %b %Y') }}</td>
+                        <td>
+                            {% if checkin.check_out_time %}
+                            {{ checkin.check_out_time.strftime('%H:%M, %d %b %Y') }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if checkin.check_out_time %}
+                            {% set duration = checkin.check_out_time - checkin.check_in_time %}
+                            {% set hours = duration.seconds // 3600 %}
+                            {% set minutes = (duration.seconds % 3600) // 60 %}
+                            {{ hours }}h {{ minutes }}m
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if checkin.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Checked Out</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">No visitor data found for the selected criteria</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <div>
+            <strong>Total Records:</strong> {{ checkins|length }}
+        </div>
+        <small class="text-muted">Showing data from {{ start_date }} to {{ end_date }}</small>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Date picker initialization happens automatically via main.js
+        
+        // Table filtering
+        const tableFilter = document.getElementById('tableFilter');
+        if (tableFilter) {
+            tableFilter.addEventListener('keyup', function() {
+                const filterValue = this.value.toLowerCase();
+                const tableRows = document.querySelectorAll('.filterable-table tbody tr');
+                
+                tableRows.forEach(function(row) {
+                    const text = row.textContent.toLowerCase();
+                    if (text.indexOf(filterValue) > -1) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscription Management - Visitor Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1><i class="fas fa-credit-card me-2"></i> Subscription Management</h1>
+    {% if current_subscription %}
+    <div>
+        <a href="{{ url_for('subscription.manage') }}" class="btn btn-primary">
+            <i class="fas fa-cog me-2"></i> Manage Billing
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if current_subscription %}
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i> Current Subscription</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h3>{{ plans[current_subscription.plan_name]['name'] }}</h3>
+                <p class="text-muted">Your subscription is currently <strong>{{ current_subscription.status }}</strong></p>
+                
+                <div class="mb-3">
+                    <strong>Start Date:</strong> {{ current_subscription.start_date.strftime('%d %B, %Y') }}<br>
+                    <strong>Next Billing Date:</strong> {{ current_subscription.end_date.strftime('%d %B, %Y') if current_subscription.end_date else 'N/A' }}<br>
+                    <strong>Amount:</strong> ${{ "%.2f"|format(current_subscription.price) }}/month
+                </div>
+                
+                <a href="{{ url_for('subscription.manage') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-cog me-2"></i> Manage Subscription
+                </a>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-light">
+                    <div class="card-header">
+                        <h5 class="mb-0">Features Included</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for feature_name, feature_value in plans[current_subscription.plan_name]['features'].items() %}
+                            <li class="list-group-item bg-transparent">
+                                <i class="fas fa-check text-success me-2"></i>
+                                {% if feature_name == 'visitors_per_month' %}
+                                {% if feature_value == 'unlimited' %}
+                                Unlimited visitors per month
+                                {% else %}
+                                {{ feature_value }} visitors per month
+                                {% endif %}
+                                {% elif feature_name == 'staff_members' %}
+                                {% if feature_value == 'unlimited' %}
+                                Unlimited staff members
+                                {% else %}
+                                {{ feature_value }} staff members
+                                {% endif %}
+                                {% elif feature_name == 'email_notifications' %}
+                                Email notifications
+                                {% elif feature_name == 'photo_capture' %}
+                                Visitor photo capture
+                                {% elif feature_name == 'badge_printing' %}
+                                Badge printing
+                                {% elif feature_name == 'custom_badges' %}
+                                Custom badge templates
+                                {% elif feature_name == 'document_signing' %}
+                                Document signing
+                                {% elif feature_name == 'reports' %}
+                                {{ feature_value|capitalize }} reporting
+                                {% else %}
+                                {{ feature_name|replace('_', ' ')|capitalize }}: {{ feature_value }}
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-tags me-2"></i> Available Plans</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for plan_id, plan in plans.items() %}
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="plan-card {% if plan_id == 'premium' %}recommended{% endif %} h-100">
+                    <div class="text-center mb-3">
+                        {% if plan_id == 'free' %}
+                        <i class="fas fa-leaf fa-3x text-secondary"></i>
+                        {% elif plan_id == 'basic' %}
+                        <i class="fas fa-star fa-3x text-info"></i>
+                        {% elif plan_id == 'premium' %}
+                        <i class="fas fa-crown fa-3x text-primary"></i>
+                        {% elif plan_id == 'enterprise' %}
+                        <i class="fas fa-building fa-3x text-success"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="text-center">{{ plan['name'] }}</h3>
+                    <div class="plan-price text-center">
+                        ${{ "%.2f"|format(plan['price']) }}
+                        <small>/month</small>
+                    </div>
+                    
+                    <ul class="plan-features">
+                        {% for feature_name, feature_value in plan['features'].items() %}
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% if feature_name == 'visitors_per_month' %}
+                            {% if feature_value == 'unlimited' %}
+                            Unlimited visitors per month
+                            {% else %}
+                            {{ feature_value }} visitors per month
+                            {% endif %}
+                            {% elif feature_name == 'staff_members' %}
+                            {% if feature_value == 'unlimited' %}
+                            Unlimited staff members
+                            {% else %}
+                            {{ feature_value }} staff members
+                            {% endif %}
+                            {% elif feature_name == 'email_notifications' %}
+                            Email notifications
+                            {% elif feature_name == 'photo_capture' %}
+                            Visitor photo capture
+                            {% elif feature_name == 'badge_printing' %}
+                            Badge printing
+                            {% elif feature_name == 'custom_badges' %}
+                            Custom badge templates
+                            {% elif feature_name == 'document_signing' %}
+                            Document signing
+                            {% elif feature_name == 'reports' %}
+                            {{ feature_value|capitalize }} reporting
+                            {% else %}
+                            {{ feature_name|replace('_', ' ')|capitalize }}: {{ feature_value }}
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        {% if current_subscription and current_subscription.plan_name == plan_id %}
+                        <button class="btn btn-outline-secondary" disabled>Current Plan</button>
+                        {% else %}
+                        <a href="{{ url_for('subscription.checkout', plan=plan_id) }}" class="btn btn-primary">
+                            {% if plan_id == 'free' %}
+                            Select Free Plan
+                            {% else %}
+                            Upgrade to {{ plan['name'] }}
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="alert alert-info mb-0">
+            <div class="d-flex">
+                <div class="me-3">
+                    <i class="fas fa-info-circle fa-2x"></i>
+                </div>
+                <div>
+                    <h5>Subscription Information</h5>
+                    <p class="mb-0">Plans are billed monthly. You can upgrade or downgrade your plan at any time. Changes to your subscription will take effect immediately.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

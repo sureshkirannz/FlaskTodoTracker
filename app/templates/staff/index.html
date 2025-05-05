@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Management - Visitor Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1><i class="fas fa-users me-2"></i> Staff Management</h1>
+    <div>
+        <a href="{{ url_for('staff.add_staff') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i> Add Staff
+        </a>
+        <a href="{{ url_for('staff.import_staff') }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-file-import me-2"></i> Import Staff
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-users me-2"></i> Staff Directory</h5>
+        <div class="input-group" style="width: 300px;">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control" id="tableFilter" placeholder="Search staff...">
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover filterable-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Department</th>
+                        <th>Position</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff_member in staff %}
+                    <tr>
+                        <td>
+                            {% if staff_member.photo %}
+                            <img src="data:image/png;base64,{{ staff_member.photo }}" alt="{{ staff_member.first_name }}" class="rounded-circle me-2" width="40" height="40">
+                            {% else %}
+                            <div class="avatar me-2">
+                                <span class="avatar-initials">{{ staff_member.first_name[0] }}{{ staff_member.last_name[0] }}</span>
+                            </div>
+                            {% endif %}
+                            {{ staff_member.first_name }} {{ staff_member.last_name }}
+                        </td>
+                        <td>{{ staff_member.email }}</td>
+                        <td>{{ staff_member.phone or 'N/A' }}</td>
+                        <td>{{ staff_member.department or 'N/A' }}</td>
+                        <td>{{ staff_member.position or 'N/A' }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ url_for('staff.edit_staff', staff_id=staff_member.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteStaffModal{{ staff_member.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Delete Modal -->
+                            <div class="modal fade" id="deleteStaffModal{{ staff_member.id }}" tabindex="-1" aria-labelledby="deleteStaffModalLabel{{ staff_member.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteStaffModalLabel{{ staff_member.id }}">Confirm Deletion</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Are you sure you want to delete {{ staff_member.first_name }} {{ staff_member.last_name }}?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <form action="{{ url_for('staff.delete_staff', staff_id=staff_member.id) }}" method="POST">
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">No staff members found. <a href="{{ url_for('staff.add_staff') }}">Add your first staff member</a>.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><strong>Total Staff:</strong> {{ staff|length }}</span>
+            <small class="text-muted">Staff members can be selected as hosts for visitors</small>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: bold;
+    }
+    
+    .avatar-initials {
+        font-size: 16px;
+    }
+</style>
+{% endblock %}

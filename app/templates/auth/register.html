@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Visitor Management System{% endblock %}
+
+{% block body_attributes %}class="bg-dark"{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header text-center bg-primary text-white">
+                <h2 class="fw-bold mb-0">Create an Account</h2>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-person-plus text-primary" viewBox="0 0 16 16">
+                        <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                        <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
+                    </svg>
+                </div>
+                
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Start by creating your organization and admin account
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3 border-bottom pb-2">Organization Information</h5>
+                    <div class="mb-3">
+                        <label for="organization_name" class="form-label">{{ form.organization_name.label }}</label>
+                        {{ form.organization_name(class="form-control", id="organization_name", placeholder="Company, Inc.") }}
+                        {% for error in form.organization_name.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3 border-bottom pb-2">Admin Account</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">{{ form.first_name.label }}</label>
+                            {{ form.first_name(class="form-control", id="first_name") }}
+                            {% for error in form.first_name.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">{{ form.last_name.label }}</label>
+                            {{ form.last_name(class="form-control", id="last_name") }}
+                            {% for error in form.last_name.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">{{ form.email.label }}</label>
+                        {{ form.email(class="form-control", id="email", placeholder="your@email.com") }}
+                        {% for error in form.email.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">{{ form.username.label }}</label>
+                        {{ form.username(class="form-control", id="username") }}
+                        {% for error in form.username.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">{{ form.password.label }}</label>
+                        {{ form.password(class="form-control", id="password") }}
+                        <div class="form-text">Password must be at least 8 characters long</div>
+                        {% for error in form.password.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password2" class="form-label">{{ form.password2.label }}</label>
+                        {{ form.password2(class="form-control", id="password2") }}
+                        {% for error in form.password2.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center bg-light py-3">
+                <div>Already have an account?</div>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary mt-2">Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
