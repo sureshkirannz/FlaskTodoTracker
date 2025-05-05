@@ -1,132 +1,145 @@
+/**
+ * Kiosk Mode JavaScript
+ * Visitor Management System
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Timer to return to home screen after inactivity
-    let inactivityTimer;
-    const inactivityTimeout = 180000; // 3 minutes of inactivity
-    
-    // Start inactivity timer
-    function startInactivityTimer() {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = setTimeout(returnToHome, inactivityTimeout);
-    }
-    
-    // Return to kiosk home screen
-    function returnToHome() {
-        window.location.href = '/kiosk';
-    }
-    
-    // Reset timer on user interaction
-    function resetTimer() {
-        startInactivityTimer();
-    }
-    
-    // Add event listeners for user interaction
-    document.addEventListener('touchstart', resetTimer);
-    document.addEventListener('mousemove', resetTimer);
-    document.addEventListener('mousedown', resetTimer);
-    document.addEventListener('keypress', resetTimer);
-    document.addEventListener('click', resetTimer);
-    
-    // Start the timer initially
-    startInactivityTimer();
-    
-    // Exit passcode functionality
-    const exitButton = document.getElementById('exit-kiosk-btn');
-    const exitModal = document.getElementById('exitKioskModal');
-    const passcodeInput = document.getElementById('kiosk-passcode');
-    const exitForm = document.getElementById('exit-kiosk-form');
-    
-    if (exitButton && exitModal) {
-        exitButton.addEventListener('click', function() {
-            const modal = new bootstrap.Modal(exitModal);
-            modal.show();
+    /**
+     * Kiosk Fullscreen Mode
+     */
+    function toggleFullScreen() {
+        if (!document.fullscreenElement &&
+            !document.mozFullScreenElement &&
+            !document.webkitFullscreenElement &&
+            !document.msFullscreenElement) {
             
-            if (passcodeInput) {
-                passcodeInput.value = '';
-                setTimeout(() => passcodeInput.focus(), 500);
-            }
-        });
-    }
-    
-    // Set up fullscreen mode
-    const enterFullscreenBtn = document.getElementById('enter-fullscreen');
-    if (enterFullscreenBtn) {
-        enterFullscreenBtn.addEventListener('click', function() {
+            // Enter fullscreen
             if (document.documentElement.requestFullscreen) {
                 document.documentElement.requestFullscreen();
-            } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-                document.documentElement.mozRequestFullScreen();
-            } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari & Opera
-                document.documentElement.webkitRequestFullscreen();
-            } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+            } else if (document.documentElement.msRequestFullscreen) {
                 document.documentElement.msRequestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) {
+                document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
             }
-        });
+        } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
     }
-    
-    // Clock update
+
+    // Add event listener to fullscreen button if it exists
+    const fullscreenBtn = document.getElementById('enter-fullscreen');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', toggleFullScreen);
+    }
+
+    /**
+     * Kiosk Clock
+     */
+    function updateClock() {
+        const clockElement = document.getElementById('kiosk-clock');
+        if (!clockElement) return;
+
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        
+        clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    // Initialize and update clock every second if it exists
     const clockElement = document.getElementById('kiosk-clock');
     if (clockElement) {
-        function updateClock() {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            const dateString = now.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            
-            clockElement.innerHTML = `
-                <div class="time">${hours}:${minutes}:${seconds}</div>
-                <div class="date">${dateString}</div>
-            `;
-        }
-        
-        // Update clock immediately and then every second
         updateClock();
         setInterval(updateClock, 1000);
     }
+
+    /**
+     * Form Validation Enhancements
+     */
+    const forms = document.querySelectorAll('.kiosk-form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        });
+    });
     
-    // Staff selection cards
-    const staffCards = document.querySelectorAll('.staff-card');
-    const staffIdInput = document.getElementById('staff_id');
+    /**
+     * Auto-Focus First Form Field
+     */
+    const firstInput = document.querySelector('.kiosk-form input:not([type="hidden"]):first-of-type');
+    if (firstInput) {
+        firstInput.focus();
+    }
     
-    if (staffCards.length > 0 && staffIdInput) {
-        staffCards.forEach(function(card) {
-            card.addEventListener('click', function() {
-                // Remove selected class from all cards
-                staffCards.forEach(c => c.classList.remove('selected'));
-                // Add selected class to clicked card
-                this.classList.add('selected');
-                // Update hidden input value
-                staffIdInput.value = this.getAttribute('data-staff-id');
-            });
+    /**
+     * Exit Kiosk Form Handling
+     */
+    const exitKioskForm = document.getElementById('exit-kiosk-form');
+    if (exitKioskForm) {
+        exitKioskForm.addEventListener('submit', function(event) {
+            // Form submission is handled by the backend
+            // This just ensures the form is properly validated client-side
+            if (!exitKioskForm.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                exitKioskForm.classList.add('was-validated');
+            }
         });
     }
     
-    // Virtual keyboard for touch screens
-    const useVirtualKeyboard = false; // Set to true to enable
+    /**
+     * Screen Timeout Detection & Reset
+     * - Reset timeout on user interaction
+     * - Redirect to main kiosk page after inactivity
+     */
+    let inactivityTimeout;
+    const TIMEOUT_DURATION = 120000; // 2 minutes in milliseconds
     
-    if (useVirtualKeyboard) {
-        const textInputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
-        textInputs.forEach(function(input) {
-            input.addEventListener('focus', function() {
-                // Show virtual keyboard
-                showVirtualKeyboard(this);
-            });
-        });
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimeout);
+        inactivityTimeout = setTimeout(redirectToHome, TIMEOUT_DURATION);
     }
     
-    function showVirtualKeyboard(inputElement) {
-        // This is a placeholder for a virtual keyboard implementation
-        // You would typically use a library like simple-keyboard for this
-        console.log('Virtual keyboard for:', inputElement.id);
+    function redirectToHome() {
+        // Only redirect if we're not already on the main page and we're in kiosk mode
+        if (window.location.pathname.includes('/kiosk') && 
+            !window.location.pathname.endsWith('/kiosk/') && 
+            !window.location.pathname.endsWith('/kiosk')) {
+            
+            // Get org_id from URL if available
+            const orgIdMatch = window.location.pathname.match(/\/org\/(\d+)/);
+            const orgId = orgIdMatch ? orgIdMatch[1] : null;
+            
+            if (orgId) {
+                window.location.href = `/kiosk/org/${orgId}`;
+            } else {
+                window.location.href = '/kiosk/';
+            }
+        }
     }
     
-    // Setup webcam if on check-in page
-    if (document.getElementById('webcam')) {
-        setupWebcam();
-    }
+    // Set up initial timeout
+    resetInactivityTimer();
+    
+    // Reset timer on user interaction
+    ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+        document.addEventListener(event, resetInactivityTimer, true);
+    });
 });
