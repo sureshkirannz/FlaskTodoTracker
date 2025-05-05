@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from app import db
 from app.models import User, Organization
 from app.forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm
-from app.utils import send_password_reset_email, create_default_email_templates, create_default_badge_template
+from app.utils import send_password_reset_email, send_welcome_email, create_default_email_templates, create_default_badge_template
 
 auth = Blueprint('auth', __name__)
 

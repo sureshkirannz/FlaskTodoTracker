@@ -1,0 +1,31 @@
+WELCOME TO {{ organization.name.upper() }} VISITOR MANAGEMENT SYSTEM
+===============================================================
+
+Hello {{ user.first_name }},
+
+Thank you for registering with the {{ organization.name }} Visitor Management System. Your account has been successfully created and is now ready to use.
+
+With our visitor management system, you can:
+- Securely manage visitor check-ins and check-outs
+- Send automated notifications to staff when visitors arrive
+- Generate visitor badges and maintain accurate visitor logs
+- Pre-register expected visitors for a smoother check-in experience
+- View analytics on visitor traffic and activity
+
+To get started, simply log in to your account using the link below:
+{{ url }}
+
+Here's a quick overview of your account details:
+- Organization: {{ organization.name }}
+- Email: {{ user.email }}
+- Username: {{ user.username }}
+- Account Type: Administrator
+
+If you have any questions or need assistance, please don't hesitate to contact our support team.
+
+Best regards,
+The Visitor Management System Team
+
+===============================================================
+© {{ current_year }} {{ organization.name }}. All rights reserved.
+This is an automated message. Please do not reply to this email.

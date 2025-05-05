@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to {{ organization.name }} Visitor Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #003366;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #003366;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if organization.logo %}
+            <img src="data:image/png;base64,{{ organization.logo }}" alt="{{ organization.name }}" class="logo">
+        {% endif %}
+        <h1>Welcome to {{ organization.name }} Visitor Management System</h1>
+    </div>
+
+    <div class="content">
+        <p>Hello {{ user.first_name }},</p>
+        
+        <p>Thank you for registering with the {{ organization.name }} Visitor Management System. Your account has been successfully created and is now ready to use.</p>
+        
+        <p>With our visitor management system, you can:</p>
+        <ul>
+            <li>Securely manage visitor check-ins and check-outs</li>
+            <li>Send automated notifications to staff when visitors arrive</li>
+            <li>Generate visitor badges and maintain accurate visitor logs</li>
+            <li>Pre-register expected visitors for a smoother check-in experience</li>
+            <li>View analytics on visitor traffic and activity</li>
+        </ul>
+        
+        <p>To get started, simply log in to your account using the button below:</p>
+        
+        <div style="text-align: center;">
+            <a href="{{ url }}" class="button">Log In To Your Account</a>
+        </div>
+        
+        <p style="margin-top: 20px;">Here's a quick overview of your account details:</p>
+        <ul>
+            <li><strong>Organization:</strong> {{ organization.name }}</li>
+            <li><strong>Email:</strong> {{ user.email }}</li>
+            <li><strong>Username:</strong> {{ user.username }}</li>
+            <li><strong>Account Type:</strong> Administrator</li>
+        </ul>
+        
+        <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+        
+        <p>Best regards,<br>The Visitor Management System Team</p>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; {{ current_year }} {{ organization.name }}. All rights reserved.</p>
+        <p>This is an automated message. Please do not reply to this email.</p>
+    </div>
+</body>
+</html>
