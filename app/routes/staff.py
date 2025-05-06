@@ -20,7 +20,17 @@ def add():
     """Add a new staff member"""
     form = StaffForm()
     if form.validate_on_submit():
-        # Implementation will be added here
+        staff_member = Staff(
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            department=form.department.data,
+            position=form.position.data,
+            organization_id=current_user.organization_id
+        )
+        db.session.add(staff_member)
+        db.session.commit()
         flash('Staff member added successfully', 'success')
         return redirect(url_for('staff.index'))
     
