@@ -20,7 +20,7 @@
         <div class="card h-100 card-dashboard text-white bg-primary">
             <div class="card-body">
                 <h5 class="card-title"><i class="fas fa-users me-2"></i> Active Visitors</h5>
-                <h2 class="display-4 fw-bold">{{ stats.active_checkins }}</h2>
+                <h2 class="display-4 fw-bold">{{ active_visitors }}</h2>
                 <p class="card-text">Currently checked in</p>
             </div>
         </div>
@@ -29,7 +29,7 @@
         <div class="card h-100 card-dashboard text-white bg-success">
             <div class="card-body">
                 <h5 class="card-title"><i class="fas fa-calendar-day me-2"></i> Today</h5>
-                <h2 class="display-4 fw-bold">{{ stats.today_checkins }}</h2>
+                <h2 class="display-4 fw-bold">{{ visitors_today }}</h2>
                 <p class="card-text">Visitors today</p>
             </div>
         </div>
@@ -38,7 +38,7 @@
         <div class="card h-100 card-dashboard text-white bg-info">
             <div class="card-body">
                 <h5 class="card-title"><i class="fas fa-calendar-week me-2"></i> Monthly</h5>
-                <h2 class="display-4 fw-bold">{{ stats.month_checkins }}</h2>
+                <h2 class="display-4 fw-bold">{{ visitors_week }}</h2>
                 <p class="card-text">Visitors this month</p>
             </div>
         </div>
@@ -47,7 +47,7 @@
         <div class="card h-100 card-dashboard text-white bg-secondary">
             <div class="card-body">
                 <h5 class="card-title"><i class="fas fa-user-tie me-2"></i> Staff</h5>
-                <h2 class="display-4 fw-bold">{{ stats.total_staff }}</h2>
+                <h2 class="display-4 fw-bold">{{ staff_count }}</h2>
                 <p class="card-text">Registered staff</p>
             </div>
         </div>
@@ -84,7 +84,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for checkin in recent_checkins %}
+                            {% for checkin in recent_visitors %}
                             <tr>
                                 <td>
                                     {% if checkin.visitor.photo %}
@@ -168,7 +168,7 @@
                     <a href="{{ url_for('visitor.preregister') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-calendar-plus me-2"></i> Preregister a Visitor
                     </a>
-                    <a href="{{ url_for('staff.add_staff') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('staff.add') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-user-plus me-2"></i> Add Staff Member
                     </a>
                     <a href="{{ url_for('reports.index') }}" class="list-group-item list-group-item-action">
@@ -196,13 +196,13 @@
                     datasets: [{
                         label: 'Visitor Check-ins',
                         data: [
-                            {{ stats.month_checkins // 7 }}, 
-                            {{ stats.month_checkins // 6 }}, 
-                            {{ stats.month_checkins // 5 }}, 
-                            {{ stats.month_checkins // 4 }}, 
-                            {{ stats.month_checkins // 3 }},
-                            {{ stats.yesterday_checkins }},
-                            {{ stats.today_checkins }}
+                            {{ visitors_week // 7 }}, 
+                            {{ visitors_week // 6 }}, 
+                            {{ visitors_week // 5 }}, 
+                            {{ visitors_week // 4 }}, 
+                            {{ visitors_week // 3 }},
+                            {{ visitors_week // 3 }},
+                            {{ visitors_today }}
                         ],
                         borderColor: '#007bff',
                         backgroundColor: 'rgba(0, 123, 255, 0.1)',

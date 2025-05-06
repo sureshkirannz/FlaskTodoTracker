@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Visitors - Visitor Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1><i class="fas fa-users me-2"></i> Visitors</h1>
+    <div>
+        <a href="{{ url_for('visitor.check_in') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i> Check-In Visitor
+        </a>
+        <a href="{{ url_for('visitor.preregister') }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-calendar-plus me-2"></i> Preregister Visitor
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-users me-2"></i> Visitor Log</h5>
+        <div class="input-group" style="width: 300px;">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control" id="tableFilter" placeholder="Search visitors...">
+        </div>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs mb-3" id="visitorTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">All Visitors</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab" aria-controls="active" aria-selected="false">Active Check-ins</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="preregistered-tab" data-bs-toggle="tab" data-bs-target="#preregistered" type="button" role="tab" aria-controls="preregistered" aria-selected="false">Preregistered</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="visitorTabsContent">
+            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover filterable-table">
+                        <thead>
+                            <tr>
+                                <th>Visitor</th>
+                                <th>Email</th>
+                                <th>Company</th>
+                                <th>Last Visit</th>
+                                <th>Total Visits</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visitor in visitors %}
+                            <tr>
+                                <td>
+                                    {% if visitor.photo %}
+                                    <img src="data:image/png;base64,{{ visitor.photo }}" alt="{{ visitor.first_name }}" class="visitor-photo me-2" width="30" height="30">
+                                    {% endif %}
+                                    {{ visitor.first_name }} {{ visitor.last_name }}
+                                </td>
+                                <td>{{ visitor.email or 'N/A' }}</td>
+                                <td>{{ visitor.company or 'N/A' }}</td>
+                                <td>
+                                    {% if visitor.checkins %}
+                                    {{ visitor.checkins[-1].check_in_time.strftime('%Y-%m-%d %H:%M') }}
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </td>
+                                <td>{{ visitor.checkins|length }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('visitor.view', visitor_id=visitor.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('visitor.check_in', visitor_id=visitor.id) }}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-sign-in-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No visitors found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="active" role="tabpanel" aria-labelledby="active-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover filterable-table">
+                        <thead>
+                            <tr>
+                                <th>Visitor</th>
+                                <th>Purpose</th>
+                                <th>Host</th>
+                                <th>Check-in Time</th>
+                                <th>Duration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set active_found = false %}
+                            {% for visitor in visitors %}
+                                {% for checkin in visitor.checkins %}
+                                    {% if checkin.is_active %}
+                                    {% set active_found = true %}
+                                    <tr>
+                                        <td>
+                                            {% if visitor.photo %}
+                                            <img src="data:image/png;base64,{{ visitor.photo }}" alt="{{ visitor.first_name }}" class="visitor-photo me-2" width="30" height="30">
+                                            {% endif %}
+                                            {{ visitor.first_name }} {{ visitor.last_name }}
+                                        </td>
+                                        <td>{{ checkin.purpose }}</td>
+                                        <td>
+                                            {% if checkin.host %}
+                                            {{ checkin.host.first_name }} {{ checkin.host.last_name }}
+                                            {% else %}
+                                            Not specified
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ checkin.check_in_time.strftime('%H:%M, %d %b %Y') }}</td>
+                                        <td>{{ ((now() - checkin.check_in_time).total_seconds() / 60)|int }} minutes</td>
+                                        <td>
+                                            <a href="{{ url_for('visitor.check_out', checkin_id=checkin.id) }}" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-sign-out-alt me-1"></i> Check-out
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                            
+                            {% if not active_found %}
+                            <tr>
+                                <td colspan="6" class="text-center">No active check-ins.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="preregistered" role="tabpanel" aria-labelledby="preregistered-tab">
+                <!-- This will be populated with preregistered visitors -->
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Preregistered visitors will appear here. This feature will be implemented soon.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><strong>Total Visitors:</strong> {{ visitors|length }}</span>
+            <a href="{{ url_for('reports.index') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-chart-bar me-1"></i> View Detailed Reports
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .visitor-photo {
+        border-radius: 50%;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Table filter functionality
+        const tableFilter = document.getElementById('tableFilter');
+        if (tableFilter) {
+            tableFilter.addEventListener('keyup', function() {
+                const filterValue = this.value.toLowerCase();
+                const tables = document.querySelectorAll('.filterable-table');
+                
+                tables.forEach(table => {
+                    const rows = table.querySelectorAll('tbody tr');
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        if (text.indexOf(filterValue) > -1) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
