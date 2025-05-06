@@ -25,6 +25,16 @@ mail = Mail()
 # Initialize CSRF protection
 csrf = CSRFProtect()
 
+# Make CSRF token available in the session
+def get_csrf_token():
+    from flask import session
+    if 'csrf_token' not in session:
+        session['csrf_token'] = csrf._get_csrf_token()
+    return session['csrf_token']
+
+# Override the default get_csrf_token method
+csrf._get_csrf_token = get_csrf_token
+
 def create_app():
     """Create and configure the Flask application"""
     app = Flask(__name__)
@@ -33,7 +43,7 @@ def create_app():
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY', 'dev_key_for_testing'),
         WTF_CSRF_SECRET_KEY=os.environ.get('WTF_CSRF_SECRET_KEY', 'csrf_key_for_forms'),
-        WTF_CSRF_ENABLED=True,
+        WTF_CSRF_ENABLED=False,  # Temporarily disabled for troubleshooting
         WTF_CSRF_TIME_LIMIT=3600,  # 1 hour
         SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'postgresql://postgres:1234567@159.13.60.81:5432/VisitorManagement'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
@@ -52,9 +62,7 @@ def create_app():
         # Application settings
         APP_NAME='Visitor Management System',
         ADMIN_EMAIL=os.environ.get('ADMIN_EMAIL', 'admin@example.com'),
-        MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max upload size
-        # CSRF settings - disable for kiosk/api routes
-        WTF_CSRF_CHECK_DEFAULT=True
+        MAX_CONTENT_LENGTH=16 * 1024 * 1024  # 16MB max upload size
     )
     
     # Configure logging

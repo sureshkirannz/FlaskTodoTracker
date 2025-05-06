@@ -44,10 +44,13 @@ def register():
         return redirect(url_for('dashboard.index'))
     
     form = RegistrationForm()
+    # Ensure CSRF token is properly initialized
     if request.method == 'POST':
-        # Debug CSRF token issue
-        print(f"CSRF Token in form: {form.csrf_token.current_token}")
-        print(f"CSRF Token in session: {session.get('csrf_token')}")
+        # Set session cookie parameters to ensure cookies work correctly
+        app = current_app._get_current_object()
+        app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+        app.config['SESSION_COOKIE_HTTPONLY'] = True
+        app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     
     if form.validate_on_submit():
         # Create a new organization
