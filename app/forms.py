@@ -117,3 +117,18 @@ class ReportFilterForm(FlaskForm):
     staff_id = SelectField('Host', coerce=int, validators=[Optional()])
     purpose = StringField('Purpose', validators=[Optional(), Length(max=200)])
     submit = SubmitField('Filter Reports')
+    
+class SubscriptionPlanForm(FlaskForm):
+    plan_id = SelectField('Subscription Plan', validators=[DataRequired()], 
+                         choices=[
+                             ('free', 'Free'),
+                             ('basic', 'Basic'),
+                             ('professional', 'Professional'),
+                             ('enterprise', 'Enterprise')
+                         ])
+    billing_cycle = SelectField('Billing Cycle', validators=[DataRequired()],
+                              choices=[
+                                  ('monthly', 'Monthly'),
+                                  ('yearly', 'Yearly (Save up to 17%)')
+                              ])
+    submit = SubmitField('Continue to Payment')
