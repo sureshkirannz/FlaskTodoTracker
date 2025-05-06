@@ -12,7 +12,7 @@ staff = Blueprint('staff', __name__, url_prefix='/staff')
 def index():
     """List all staff members for the organization"""
     staff_members = Staff.query.filter_by(organization_id=current_user.organization_id).all()
-    return render_template('staff/index.html', title='Staff', staff_members=staff_members)
+    return render_template('staff/index.html', title='Staff', staff=staff_members)
 
 @staff.route('/add', methods=['GET', 'POST'])
 @login_required
