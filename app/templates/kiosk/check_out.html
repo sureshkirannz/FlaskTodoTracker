@@ -42,42 +42,51 @@
             </a>
         </div>
         
-        <div class="kiosk-body">
-            <h1 class="kiosk-title">Visitor Check-Out</h1>
-            
-            <div class="kiosk-card">
-                {% if form.visitor_id.choices %}
-                    <form method="POST" class="kiosk-form">
-                        {{ form.hidden_tag() }}
-                        
-                        <div class="form-group mb-4">
-                            {{ form.visitor_id.label(class="form-label") }}
-                            {{ form.visitor_id(class="form-select form-select-lg") }}
-                            {% if form.visitor_id.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.visitor_id.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            {{ form.submit(class="btn btn-primary btn-lg") }}
-                        </div>
-                    </form>
-                {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-info-circle fa-3x mb-3 text-info"></i>
-                        <h3>No Active Visitors</h3>
-                        <p class="lead">There are currently no visitors checked in at this location.</p>
-                        <a href="{{ url_for('kiosk.organization', org_id=organization.id) }}" class="btn btn-primary mt-3">
-                            <i class="fas fa-arrow-left me-2"></i> Back to Main Screen
-                        </a>
-                    </div>
-                {% endif %}
+        {% extends "kiosk/base.html" %}
+
+{% block content %}
+<div class="kiosk-body">
+    <h1 class="kiosk-title">Visitor Check-Out</h1>
+
+    <div class="kiosk-card">
+        <form method="GET" class="mb-4">
+            <div class="input-group input-group-lg">
+                <input type="email" name="email" class="form-control" placeholder="Search by email..." value="{{ request.args.get('email', '') }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Search
+                </button>
             </div>
-        </div>
+        </form>
+
+        {% if active_checkins %}
+            <form method="POST" class="kiosk-form">
+                {{ form.hidden_tag() }}
+
+                <div class="list-group mb-4">
+                    {% for checkin in active_checkins %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">{{ checkin.visitor.first_name }} {{ checkin.visitor.last_name }}</h5>
+                                <p class="mb-1">{{ checkin.visitor.email }}</p>
+                                <small>Checked in: {{ checkin.check_in_time.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <button type="submit" name="checkin_id" value="{{ checkin.id }}" class="btn btn-primary">
+                                Check Out
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </form>
+        {% else %}
+            <div class="alert alert-info">
+                No active check-ins found{% if request.args.get('email') %} for this email{% endif %}.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
         
         <div class="kiosk-footer">
             <p>© {{ now().year }} {{ organization.name }} - Visitor Management System</p>

@@ -69,7 +69,40 @@ def check_in():
 def check_out():
     """Check out a visitor"""
     form = VisitorCheckOutForm()
-    # Implementation will be added here
+    
+    # Get active check-ins for the organization
+    active_checkins = CheckIn.query.join(
+        Visitor, CheckIn.visitor_id == Visitor.id
+    ).filter(
+        Visitor.organization_id == current_user.organization_id,
+        CheckIn.check_out_time.is_(None)
+    ).all()
+    
+    # Create visitor choices for the dropdown
+    visitor_choices = []
+    for checkin in active_checkins:
+        visitor = checkin.visitor
+        host = checkin.host
+        visitor_choices.append((
+            checkin.id, 
+            f"{visitor.first_name} {visitor.last_name} - {visitor.email}"
+        ))
+    
+    form.visitor_id.choices = visitor_choices
+    
+    if form.validate_on_submit():
+        checkin = CheckIn.query.get(form.visitor_id.data)
+        if checkin and checkin.check_out_time is None:
+            checkin.check_out_time = datetime.utcnow()
+            db.session.commit()
+            
+            # Send notifications
+            send_checkout_notification(checkin)
+            
+            flash('Visitor checked out successfully', 'success')
+            return redirect(url_for('visitor.index'))
+        else:
+            flash('Invalid check-in record or visitor already checked out', 'danger')
     
     return render_template('visitor/check_out.html', title='Check Out Visitor', form=form)
 

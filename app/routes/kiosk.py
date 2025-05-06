@@ -110,6 +110,22 @@ def check_out(org_id):
     """Visitor check-out form"""
     organization = Organization.query.get_or_404(org_id)
     
+    # Get search parameter
+    email = request.args.get('email', '')
+    
+    # Get active check-ins, filtered by email if provided
+    query = CheckIn.query.join(
+        Visitor, CheckIn.visitor_id == Visitor.id
+    ).filter(
+        Visitor.organization_id == org_id,
+        CheckIn.check_out_time.is_(None)
+    )
+    
+    if email:
+        query = query.filter(Visitor.email.ilike(f'%{email}%'))
+    
+    active_checkins = query.all()
+    
     # Verify organization is active
     if not organization.is_active:
         flash('This organization is not active.', 'danger')
