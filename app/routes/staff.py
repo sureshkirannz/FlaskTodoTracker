@@ -60,6 +60,7 @@ def delete(id):
         id=id, organization_id=current_user.organization_id
     ).first_or_404()
     
-    # Implementation will be added here
+    db.session.delete(staff_member)
+    db.session.commit()
     flash('Staff member deleted successfully', 'success')
     return redirect(url_for('staff.index'))
