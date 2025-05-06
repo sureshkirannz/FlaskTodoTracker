@@ -72,4 +72,5 @@ def index():
                           active_visitors=active_visitors,
                           staff_count=staff_count,
                           recent_visitors=recent_visitors,
-                          subscription=subscription)
+                          subscription=subscription,
+                          organization=organization)
