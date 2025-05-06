@@ -1,0 +1,17 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Email Templates</h1>
+    <div class="list-group mt-4">
+        {% for template in templates %}
+        <div class="list-group-item">
+            <h5>{{ template.name }}</h5>
+            <pre class="mt-2">{{ template.content }}</pre>
+            <a href="{{ url_for('settings.edit_template', id=template.id) }}" class="btn btn-sm btn-primary mt-2">Edit</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -106,7 +106,7 @@
                     
                     <h3 class="text-center">{{ plan['name'] }}</h3>
                     <div class="plan-price text-center">
-                        ${{ "%.2f"|format(plan['price']) }}
+                        ${{ "%.2f"|format(plan.price if plan.price else 0.00) }}
                         <small>/month</small>
                     </div>
                     
