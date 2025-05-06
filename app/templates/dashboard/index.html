@@ -6,11 +6,11 @@
 <div class="d-flex align-items-center justify-content-between mb-4">
     <h1><i class="fas fa-tachometer-alt me-2"></i> Dashboard</h1>
     <div>
-        <a href="{{ url_for('visitor.checkin') }}" class="btn btn-primary">
+        <a href="{{ url_for('visitor.check_in') }}" class="btn btn-primary">
             <i class="fas fa-user-plus me-2"></i> Check-In Visitor
         </a>
-        <a href="{{ url_for('visitor.active_visitors') }}" class="btn btn-outline-primary ms-2">
-            <i class="fas fa-users me-2"></i> Active Visitors
+        <a href="{{ url_for('visitor.index') }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-users me-2"></i> All Visitors
         </a>
     </div>
 </div>
@@ -69,7 +69,7 @@
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fas fa-history me-2"></i> Recent Check-ins</h5>
-                <a href="{{ url_for('visitor.active_visitors') }}" class="btn btn-sm btn-outline-primary">View All Active</a>
+                <a href="{{ url_for('visitor.index') }}" class="btn btn-sm btn-outline-primary">View All Visitors</a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -174,7 +174,7 @@
                     <a href="{{ url_for('reports.index') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-file-export me-2"></i> Export Reports
                     </a>
-                    <a href="{{ url_for('visitor.list_visitors') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('visitor.index') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-address-book me-2"></i> View All Visitors
                     </a>
                 </div>

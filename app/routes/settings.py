@@ -94,3 +94,23 @@ def badge_template():
         return redirect(url_for('settings.index'))
     
     return render_template('settings/badge_template.html', title='Badge Template', form=form, organization=organization)
+
+@settings.route('/kiosk-settings', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def kiosk_settings():
+    """Edit kiosk settings"""
+    organization = Organization.query.get(current_user.organization_id)
+    
+    if request.method == 'POST':
+        # Update kiosk settings
+        organization.enable_photo_capture = 'enable_photo_capture' in request.form
+        organization.enable_badge_printing = 'enable_badge_printing' in request.form
+        organization.enable_auto_checkout = 'enable_auto_checkout' in request.form
+        organization.auto_checkout_delay = request.form.get('auto_checkout_delay', 8)
+        
+        db.session.commit()
+        flash('Kiosk settings updated successfully', 'success')
+        return redirect(url_for('settings.index'))
+    
+    return render_template('settings/kiosk_settings.html', title='Kiosk Settings', organization=organization)
