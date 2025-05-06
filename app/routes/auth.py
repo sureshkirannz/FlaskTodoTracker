@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, session
 from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
 from app import db
@@ -44,6 +44,11 @@ def register():
         return redirect(url_for('dashboard.index'))
     
     form = RegistrationForm()
+    if request.method == 'POST':
+        # Debug CSRF token issue
+        print(f"CSRF Token in form: {form.csrf_token.current_token}")
+        print(f"CSRF Token in session: {session.get('csrf_token')}")
+    
     if form.validate_on_submit():
         # Create a new organization
         organization = Organization(

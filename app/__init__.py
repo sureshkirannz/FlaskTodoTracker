@@ -52,7 +52,9 @@ def create_app():
         # Application settings
         APP_NAME='Visitor Management System',
         ADMIN_EMAIL=os.environ.get('ADMIN_EMAIL', 'admin@example.com'),
-        MAX_CONTENT_LENGTH=16 * 1024 * 1024  # 16MB max upload size
+        MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max upload size
+        # CSRF settings - disable for kiosk/api routes
+        WTF_CSRF_CHECK_DEFAULT=True
     )
     
     # Configure logging
@@ -66,6 +68,9 @@ def create_app():
     login_manager.init_app(app)
     mail.init_app(app)
     
+    # Initialize CSRF protection
+    csrf.init_app(app)
+    
     # Register blueprints
     with app.app_context():
         # Import models to ensure they're registered with SQLAlchemy
@@ -77,6 +82,9 @@ def create_app():
         # Register blueprints
         from app.routes.auth import auth
         app.register_blueprint(auth)
+        
+        # Exempt auth routes from CSRF protection
+        csrf.exempt(auth)
         
         from app.routes.dashboard import dashboard
         app.register_blueprint(dashboard)
@@ -95,6 +103,9 @@ def create_app():
         
         from app.routes.kiosk import kiosk
         app.register_blueprint(kiosk)
+        
+        # Exempt kiosk routes from CSRF protection
+        csrf.exempt(kiosk)
         
         from app.routes.subscription import subscription
         app.register_blueprint(subscription)
