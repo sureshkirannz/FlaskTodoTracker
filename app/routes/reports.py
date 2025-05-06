@@ -1,145 +1,115 @@
-from datetime import datetime, timedelta
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request
 from flask_login import login_required, current_user
 from app import db
-from app.models import CheckIn, Visitor, Staff
+from app.models import Visitor, CheckIn, Staff
 from app.forms import ReportFilterForm
-from app.utils import admin_required
+from collections import defaultdict
+from datetime import datetime, timedelta
 
 reports = Blueprint('reports', __name__, url_prefix='/reports')
 
 @reports.route('/')
 @login_required
 def index():
-    """Reports dashboard"""
+    """Generate reports based on filters"""
     form = ReportFilterForm()
+    # Populate staff dropdown
+    form.staff_id.choices = [(0, 'All Staff')] + [
+        (s.id, f"{s.first_name} {s.last_name}") 
+        for s in Staff.query.filter_by(organization_id=current_user.organization_id).all()
+    ]
     
-    # Populate the staff select field with organization staff
-    staff_list = Staff.query.filter_by(organization_id=current_user.organization_id).all()
-    form.staff_id.choices = [(0, 'All Staff')] + [(s.id, f"{s.first_name} {s.last_name}") for s in staff_list]
+    # Get query parameters
+    start_date = request.args.get('start_date', '')
+    end_date = request.args.get('end_date', '')
+    staff_id = request.args.get('staff_id', '0')
+    purpose = request.args.get('purpose', '')
     
-    # Get filter parameters
-    start_date = request.args.get('start_date', None)
-    end_date = request.args.get('end_date', None)
-    staff_id = request.args.get('staff_id', None)
-    purpose = request.args.get('purpose', None)
+    # Set initial query
+    query = CheckIn.query.join(Visitor).filter(
+        Visitor.organization_id == current_user.organization_id
+    )
     
-    # Convert dates to datetime if provided
+    # Apply filters if provided
     if start_date:
-        start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    else:
-        start_date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=30)
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(CheckIn.check_in_time >= start_date_obj)
+        except ValueError:
+            pass
     
     if end_date:
-        end_date = datetime.strptime(end_date, '%Y-%m-%d')
-        # Set to end of day
-        end_date = end_date.replace(hour=23, minute=59, second=59)
-    else:
-        end_date = datetime.utcnow()
-    
-    # Get checkins based on filters
-    query = CheckIn.query.join(
-        Visitor
-    ).filter(
-        Visitor.organization_id == current_user.organization_id,
-        CheckIn.check_in_time >= start_date,
-        CheckIn.check_in_time <= end_date
-    )
+        try:
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+            end_date_obj = end_date_obj.replace(hour=23, minute=59, second=59)
+            query = query.filter(CheckIn.check_in_time <= end_date_obj)
+        except ValueError:
+            pass
     
     if staff_id and staff_id != '0':
         query = query.filter(CheckIn.staff_id == int(staff_id))
     
     if purpose:
-        query = query.filter(CheckIn.purpose.ilike(f"%{purpose}%"))
+        query = query.filter(CheckIn.purpose.ilike(f'%{purpose}%'))
     
+    # Execute query
     checkins = query.order_by(CheckIn.check_in_time.desc()).all()
     
-    # Initialize form with current values
-    form.start_date.data = start_date.strftime('%Y-%m-%d')
-    form.end_date.data = end_date.strftime('%Y-%m-%d')
-    if staff_id:
-        form.staff_id.data = int(staff_id)
-    form.purpose.data = purpose
+    # Calculate statistics
+    total_checkins = len(checkins)
+    unique_visitors = len(set(c.visitor_id for c in checkins))
     
-    return render_template(
-        'reports/index.html',
-        title='Reports',
-        form=form,
-        checkins=checkins,
-        start_date=start_date,
-        end_date=end_date
-    )
+    # Calculate average duration (only for checked out visits)
+    completed_visits = [c for c in checkins if c.check_out_time]
+    if completed_visits:
+        total_duration = sum((c.check_out_time - c.check_in_time).total_seconds() for c in completed_visits)
+        avg_duration = total_duration / len(completed_visits) / 60  # In minutes
+    else:
+        avg_duration = 0
+    
+    # Find most visited host
+    host_visits = defaultdict(int)
+    for checkin in checkins:
+        if checkin.host:
+            host_name = f"{checkin.host.first_name} {checkin.host.last_name}"
+            host_visits[host_name] += 1
+    
+    most_visited_host = max(host_visits.items(), key=lambda x: x[1])[0] if host_visits else "N/A"
+    
+    # Calculate first-time vs returning visitors
+    visitor_counts = defaultdict(int)
+    for checkin in checkins:
+        visitor_counts[checkin.visitor_id] += 1
+    
+    first_time_visitors = sum(1 for count in visitor_counts.values() if count == 1)
+    returning_visitors = unique_visitors - first_time_visitors
+    
+    # Calculate visit frequency by date
+    visit_frequency = defaultdict(int)
+    for checkin in checkins:
+        date_str = checkin.check_in_time.strftime('%Y-%m-%d')
+        visit_frequency[date_str] += 1
+    
+    # Sort by date
+    visit_frequency = dict(sorted(visit_frequency.items()))
+    
+    return render_template('reports/index.html', title='Reports',
+                          form=form,
+                          checkins=checkins,
+                          total_checkins=total_checkins,
+                          unique_visitors=unique_visitors,
+                          avg_duration=avg_duration,
+                          most_visited_host=most_visited_host,
+                          first_time_visitors=first_time_visitors,
+                          returning_visitors=returning_visitors,
+                          visit_frequency=visit_frequency)
 
-@reports.route('/visitor-stats')
+@reports.route('/visitor/<int:visitor_id>')
 @login_required
-def visitor_stats():
-    """Get visitor statistics for charts"""
-    days = int(request.args.get('days', 30))
+def visitor(visitor_id):
+    """Generate report for a specific visitor"""
+    visitor = Visitor.query.filter_by(id=visitor_id, organization_id=current_user.organization_id).first_or_404()
     
-    # Calculate the date range
-    end_date = datetime.utcnow()
-    start_date = end_date - timedelta(days=days)
-    
-    # Get daily check-ins count for the period
-    daily_stats = []
-    current_date = start_date
-    
-    while current_date <= end_date:
-        next_date = current_date + timedelta(days=1)
-        
-        count = CheckIn.query.join(
-            Visitor
-        ).filter(
-            Visitor.organization_id == current_user.organization_id,
-            CheckIn.check_in_time >= current_date,
-            CheckIn.check_in_time < next_date
-        ).count()
-        
-        daily_stats.append({
-            'date': current_date.strftime('%Y-%m-%d'),
-            'count': count
-        })
-        
-        current_date = next_date
-    
-    # Get top purpose counts
-    purpose_stats = db.session.query(
-        CheckIn.purpose, db.func.count(CheckIn.id).label('count')
-    ).join(
-        Visitor
-    ).filter(
-        Visitor.organization_id == current_user.organization_id,
-        CheckIn.check_in_time >= start_date,
-        CheckIn.check_in_time <= end_date
-    ).group_by(
-        CheckIn.purpose
-    ).order_by(
-        db.func.count(CheckIn.id).desc()
-    ).limit(5).all()
-    
-    purpose_data = [{'purpose': p.purpose or 'Unknown', 'count': p.count} for p in purpose_stats]
-    
-    # Get top staff visited
-    staff_stats = db.session.query(
-        Staff.first_name, Staff.last_name, db.func.count(CheckIn.id).label('count')
-    ).join(
-        CheckIn, Staff.id == CheckIn.staff_id
-    ).join(
-        Visitor
-    ).filter(
-        Visitor.organization_id == current_user.organization_id,
-        CheckIn.check_in_time >= start_date,
-        CheckIn.check_in_time <= end_date
-    ).group_by(
-        Staff.id
-    ).order_by(
-        db.func.count(CheckIn.id).desc()
-    ).limit(5).all()
-    
-    staff_data = [{'name': f"{s.first_name} {s.last_name}", 'count': s.count} for s in staff_stats]
-    
-    return jsonify({
-        'daily': daily_stats,
-        'purposes': purpose_data,
-        'staff': staff_data
-    })
+    # For now, just redirect to visitor view page
+    return render_template('visitor/view.html', title=f'Visitor Report: {visitor.first_name} {visitor.last_name}',
+                          visitor=visitor, edit_form=None)

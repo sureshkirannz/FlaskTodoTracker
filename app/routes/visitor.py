@@ -2,8 +2,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app import db
 from app.models import Visitor, CheckIn, Staff
-from app.forms import VisitorCheckInForm, VisitorCheckOutForm, PreregisterVisitorForm
+from app.forms import VisitorCheckInForm, VisitorCheckOutForm, PreregisterVisitorForm, StaffForm
 from app.utils import send_checkin_notification, send_checkout_notification, encode_image, generate_badge_data
+from datetime import datetime
 
 visitor = Blueprint('visitor', __name__, url_prefix='/visitors')
 
@@ -44,6 +45,30 @@ def check_out():
 def preregister():
     """Preregister a visitor"""
     form = PreregisterVisitorForm()
+    # Populate the staff select field
+    form.staff_id.choices = [(s.id, f"{s.first_name} {s.last_name} - {s.department}") 
+                            for s in Staff.query.filter_by(organization_id=current_user.organization_id).all()]
+    
     # Implementation will be added here
     
     return render_template('visitor/preregister.html', title='Preregister Visitor', form=form)
+
+@visitor.route('/view/<int:visitor_id>')
+@login_required
+def view(visitor_id):
+    """View visitor details"""
+    visitor = Visitor.query.filter_by(id=visitor_id, organization_id=current_user.organization_id).first_or_404()
+    edit_form = StaffForm()  # Using StaffForm as a placeholder for visitor edit form
+    
+    return render_template('visitor/view.html', title=f'Visitor: {visitor.first_name} {visitor.last_name}', 
+                          visitor=visitor, edit_form=edit_form)
+
+@visitor.route('/edit/<int:visitor_id>', methods=['POST'])
+@login_required
+def edit(visitor_id):
+    """Edit visitor information"""
+    visitor = Visitor.query.filter_by(id=visitor_id, organization_id=current_user.organization_id).first_or_404()
+    
+    # Implementation will be added here
+    flash('Visitor information updated successfully', 'success')
+    return redirect(url_for('visitor.view', visitor_id=visitor.id))

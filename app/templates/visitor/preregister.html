@@ -5,91 +5,139 @@
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-4">
     <h1><i class="fas fa-calendar-plus me-2"></i> Preregister Visitor</h1>
-    <div>
-        <a href="{{ url_for('visitor.preregistered_list') }}" class="btn btn-outline-primary">
-            <i class="fas fa-list me-2"></i> Preregistered Visitors
-        </a>
-    </div>
+    <a href="{{ url_for('visitor.index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i> Back to Visitors
+    </a>
 </div>
 
 <div class="row">
     <div class="col-md-8">
         <div class="card shadow-sm">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i> Visitor Information</h5>
+                <h5 class="mb-0">Preregistration Form</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('visitor.preregister') }}">
+                <form method="POST" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
-                    
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="first_name" class="form-label">{{ form.first_name.label }} <span class="text-danger">*</span></label>
-                            {{ form.first_name(class="form-control", id="first_name") }}
-                            {% for error in form.first_name.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
+                            <div class="form-group mb-3">
+                                {{ form.first_name.label(class="form-label") }}
+                                {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
+                                {% if form.first_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.first_name.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <label for="last_name" class="form-label">{{ form.last_name.label }} <span class="text-danger">*</span></label>
-                            {{ form.last_name(class="form-control", id="last_name") }}
-                            {% for error in form.last_name.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
+                            <div class="form-group mb-3">
+                                {{ form.last_name.label(class="form-label") }}
+                                {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else "")) }}
+                                {% if form.last_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.last_name.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="email" class="form-label">{{ form.email.label }} <span class="text-danger">*</span></label>
-                            {{ form.email(class="form-control", id="email") }}
-                            {% for error in form.email.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
+                            <div class="form-group mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <label for="phone" class="form-label">{{ form.phone.label }}</label>
-                            {{ form.phone(class="form-control", id="phone") }}
-                            {% for error in form.phone.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
+                            <div class="form-group mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+                                {% if form.phone.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.phone.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">Optional</small>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="company" class="form-label">{{ form.company.label }}</label>
-                        {{ form.company(class="form-control", id="company") }}
-                        {% for error in form.company.errors %}
-                        <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.company.label(class="form-label") }}
+                                {{ form.company(class="form-control" + (" is-invalid" if form.company.errors else "")) }}
+                                {% if form.company.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.company.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">Optional</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.purpose.label(class="form-label") }}
+                                {{ form.purpose(class="form-control" + (" is-invalid" if form.purpose.errors else "")) }}
+                                {% if form.purpose.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.purpose.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="purpose" class="form-label">{{ form.purpose.label }} <span class="text-danger">*</span></label>
-                        {{ form.purpose(class="form-control", id="purpose") }}
-                        {% for error in form.purpose.errors %}
-                        <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.expected_arrival.label(class="form-label") }}
+                                {{ form.expected_arrival(class="form-control" + (" is-invalid" if form.expected_arrival.errors else ""), placeholder="YYYY-MM-DD HH:MM") }}
+                                {% if form.expected_arrival.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.expected_arrival.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.staff_id.label(class="form-label") }}
+                                {{ form.staff_id(class="form-select" + (" is-invalid" if form.staff_id.errors else "")) }}
+                                {% if form.staff_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.staff_id.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="expected_arrival" class="form-label">{{ form.expected_arrival.label }} <span class="text-danger">*</span></label>
-                        {{ form.expected_arrival(class="form-control", id="expected_arrival", placeholder="YYYY-MM-DD HH:MM") }}
-                        <div class="form-text">Format: YYYY-MM-DD HH:MM (24-hour format)</div>
-                        {% for error in form.expected_arrival.errors %}
-                        <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="staff_id" class="form-label">{{ form.staff_id.label }} <span class="text-danger">*</span></label>
-                        {{ form.staff_id(class="form-select", id="staff_id") }}
-                        {% for error in form.staff_id.errors %}
-                        <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    
-                    <div class="d-grid gap-2">
+
+                    <div class="d-grid gap-2 mt-4">
                         {{ form.submit(class="btn btn-primary btn-lg") }}
                     </div>
                 </form>
@@ -100,62 +148,45 @@
     <div class="col-md-4">
         <div class="card shadow-sm mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Information</h5>
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Preregistration Information</h5>
             </div>
             <div class="card-body">
-                <div class="alert alert-info">
-                    <i class="fas fa-lightbulb me-2"></i> Preregister visitors to streamline their check-in process.
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        <i class="fas fa-check-circle text-success me-2"></i> Fields marked with <span class="text-danger">*</span> are required
-                    </li>
-                    <li class="list-group-item">
-                        <i class="fas fa-envelope text-success me-2"></i> An email confirmation will be sent to the visitor
-                    </li>
-                    <li class="list-group-item">
-                        <i class="fas fa-user-tie text-success me-2"></i> The host will be notified of the preregistration
-                    </li>
+                <p>When you preregister a visitor:</p>
+                <ul>
+                    <li>An email invitation will be sent to the visitor with check-in instructions</li>
+                    <li>The host will be notified of the scheduled visit</li>
+                    <li>Visitor will have a streamlined check-in experience when they arrive</li>
+                    <li>The system will send a reminder to both the visitor and host before the scheduled visit</li>
                 </ul>
+                <hr>
+                <h6>Need to send documents for review?</h6>
+                <p>You can attach documents like NDAs or safety policies to be reviewed and signed prior to the visit.</p>
+                <a href="{{ url_for('settings.documents') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-file-alt me-2"></i> Manage Documents
+                </a>
             </div>
         </div>
         
         <div class="card shadow-sm">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i> Need Help?</h5>
+                <h5 class="mb-0"><i class="fas fa-user-check me-2"></i> Need immediate check-in?</h5>
             </div>
             <div class="card-body">
-                <p>If you need any assistance with the preregistration process, please contact the administrator.</p>
-                <p><strong>Quick Tips:</strong></p>
-                <ul>
-                    <li>Make sure all required fields are filled</li>
-                    <li>Select the appropriate host from the dropdown</li>
-                    <li>Use the correct date/time format (YYYY-MM-DD HH:MM)</li>
-                </ul>
+                <p>If the visitor is already here, use the check-in process instead.</p>
+                <a href="{{ url_for('visitor.check_in') }}" class="btn btn-outline-success">
+                    <i class="fas fa-sign-in-alt me-2"></i> Check-in Visitor
+                </a>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Basic date-time field enhancement
-        const dateField = document.getElementById('expected_arrival');
-        if (dateField) {
-            // Default to tomorrow at current hour
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const formattedDate = tomorrow.getFullYear() + '-' +
-                String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' +
-                String(tomorrow.getDate()).padStart(2, '0') + ' ' +
-                String(tomorrow.getHours()).padStart(2, '0') + ':00';
-            
-            if (!dateField.value) {
-                dateField.value = formattedDate;
-            }
-        }
+        // Add datetime picker or validation logic here if needed
     });
 </script>
 {% endblock %}

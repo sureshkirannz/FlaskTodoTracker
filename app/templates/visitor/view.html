@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+
+{% block title %}Visitor Details - Visitor Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1><i class="fas fa-user me-2"></i> Visitor Profile</h1>
+    <div>
+        <a href="{{ url_for('visitor.check_in', visitor_id=visitor.id) }}" class="btn btn-success">
+            <i class="fas fa-sign-in-alt me-2"></i> Check In
+        </a>
+        <a href="{{ url_for('visitor.index') }}" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-arrow-left me-2"></i> Back to Visitors
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i> Visitor Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    {% if visitor.photo %}
+                    <img src="data:image/png;base64,{{ visitor.photo }}" alt="{{ visitor.first_name }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                    <div class="visitor-avatar mx-auto mb-3">
+                        <span class="visitor-initials">{{ visitor.first_name[0] }}{{ visitor.last_name[0] }}</span>
+                    </div>
+                    {% endif %}
+                    <h3>{{ visitor.first_name }} {{ visitor.last_name }}</h3>
+                    <p class="text-muted">{{ visitor.company or 'No Company' }}</p>
+                </div>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-envelope me-2"></i> Email</span>
+                        <span>{{ visitor.email or 'N/A' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-phone me-2"></i> Phone</span>
+                        <span>{{ visitor.phone or 'N/A' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-calendar me-2"></i> First Visit</span>
+                        <span>{% if visitor.checkins %}{{ visitor.checkins[0].check_in_time.strftime('%Y-%m-%d') }}{% else %}N/A{% endif %}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-history me-2"></i> Total Visits</span>
+                        <span class="badge bg-primary rounded-pill">{{ visitor.checkins|length }}</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editVisitorModal">
+                        <i class="fas fa-edit me-2"></i> Edit Information
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Visit Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>Most Recent Visit</h6>
+                    {% if visitor.checkins %}
+                    <p class="text-muted">{{ visitor.checkins[-1].check_in_time.strftime('%B %d, %Y at %H:%M') }}</p>
+                    {% else %}
+                    <p class="text-muted">No visits recorded</p>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Average Visit Duration</h6>
+                    {% if visitor.checkins|selectattr('check_out_time')|list|length > 0 %}
+                    {% set total_minutes = 0 %}
+                    {% set count = 0 %}
+                    {% for checkin in visitor.checkins %}
+                        {% if checkin.check_out_time %}
+                            {% set duration = (checkin.check_out_time - checkin.check_in_time).total_seconds() // 60 %}
+                            {% set total_minutes = total_minutes + duration %}
+                            {% set count = count + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    <p class="text-muted">{{ (total_minutes / count)|int }} minutes</p>
+                    {% else %}
+                    <p class="text-muted">No complete visits recorded</p>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Frequent Host</h6>
+                    {% set hosts = {} %}
+                    {% for checkin in visitor.checkins %}
+                        {% if checkin.host %}
+                            {% if checkin.host.id in hosts %}
+                                {% set _dummy = hosts.update({checkin.host.id: hosts[checkin.host.id] + 1}) %}
+                            {% else %}
+                                {% set _dummy = hosts.update({checkin.host.id: 1}) %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% set max_visits = 0 %}
+                    {% set max_host_id = None %}
+                    {% for host_id, visits in hosts.items() %}
+                        {% if visits > max_visits %}
+                            {% set max_visits = visits %}
+                            {% set max_host_id = host_id %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if max_host_id %}
+                        {% for checkin in visitor.checkins %}
+                            {% if checkin.host and checkin.host.id == max_host_id %}
+                                <p class="text-muted">{{ checkin.host.first_name }} {{ checkin.host.last_name }} ({{ max_visits }} visits)</p>
+                                {% break %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No hosts recorded</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i> Visit History</h5>
+                {% if visitor.checkins %}
+                <a href="{{ url_for('reports.visitor', visitor_id=visitor.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-file-export me-2"></i> Export Visit History
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Check-in Time</th>
+                                <th>Check-out Time</th>
+                                <th>Duration</th>
+                                <th>Purpose</th>
+                                <th>Host</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for checkin in visitor.checkins|sort(attribute='check_in_time', reverse=True) %}
+                            <tr>
+                                <td>{{ checkin.check_in_time.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ checkin.check_in_time.strftime('%H:%M') }}</td>
+                                <td>
+                                    {% if checkin.check_out_time %}
+                                    {{ checkin.check_out_time.strftime('%H:%M') }}
+                                    {% elif checkin.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No check-out</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if checkin.check_out_time %}
+                                    {{ ((checkin.check_out_time - checkin.check_in_time).total_seconds() / 60)|int }} minutes
+                                    {% elif checkin.is_active %}
+                                    {{ ((now() - checkin.check_in_time).total_seconds() / 60)|int }} minutes (ongoing)
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </td>
+                                <td>{{ checkin.purpose }}</td>
+                                <td>
+                                    {% if checkin.host %}
+                                    {{ checkin.host.first_name }} {{ checkin.host.last_name }}
+                                    {% else %}
+                                    Not specified
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No visit history found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        {% if visitor.checkins %}
+        <div class="card mt-4 shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Visit Trends</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="visitorTrendsChart" height="300"></canvas>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Edit Visitor Modal -->
+<div class="modal fade" id="editVisitorModal" tabindex="-1" aria-labelledby="editVisitorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editVisitorModalLabel">Edit Visitor Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('visitor.edit', visitor_id=visitor.id) }}" enctype="multipart/form-data">
+                    {{ edit_form.hidden_tag() }}
+                    <div class="form-group mb-3">
+                        {{ edit_form.first_name.label(class="form-label") }}
+                        {{ edit_form.first_name(class="form-control", value=visitor.first_name) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ edit_form.last_name.label(class="form-label") }}
+                        {{ edit_form.last_name(class="form-control", value=visitor.last_name) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ edit_form.email.label(class="form-label") }}
+                        {{ edit_form.email(class="form-control", value=visitor.email) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ edit_form.phone.label(class="form-label") }}
+                        {{ edit_form.phone(class="form-control", value=visitor.phone) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ edit_form.company.label(class="form-label") }}
+                        {{ edit_form.company(class="form-control", value=visitor.company) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ edit_form.photo.label(class="form-label") }}
+                        {{ edit_form.photo(class="form-control") }}
+                        <small class="form-text text-muted">Upload a new photo (optional)</small>
+                    </div>
+                    <div class="d-grid gap-2">
+                        {{ edit_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .visitor-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background-color: var(--bs-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .visitor-initials {
+        font-size: 60px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{% if visitor.checkins %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Prepare data for the chart
+        const canvas = document.getElementById('visitorTrendsChart');
+        if (!canvas) return;
+        
+        // Collect visit dates for the last 10 visits
+        const visits = [
+            {% for checkin in visitor.checkins|sort(attribute='check_in_time', reverse=True)|slice(0, 10) %}
+            {
+                date: '{{ checkin.check_in_time.strftime("%Y-%m-%d") }}',
+                duration: {% if checkin.check_out_time %}{{ ((checkin.check_out_time - checkin.check_in_time).total_seconds() / 60)|int }}{% else %}0{% endif %}
+            },
+            {% endfor %}
+        ];
+        
+        // Reverse to show chronological order
+        visits.reverse();
+        
+        const visitChart = new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels: visits.map(v => v.date),
+                datasets: [{
+                    label: 'Visit Duration (minutes)',
+                    data: visits.map(v => v.duration),
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Duration (minutes)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Visit Date'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}
