@@ -65,20 +65,25 @@ def send_email(subject, recipients, text_body, html_body, sender=None, cc=None, 
                 data=attachment['data']
             )
     
-    # Log the email
-    log_action('email_sent', {
-        'to': recipients,
-        'subject': subject,
-        'cc': cc,
-        'bcc': bcc,
-        'has_attachments': bool(attachments)
-    })
+    # Log the email attempt
+    try:
+        log_action('email_sent', {
+            'to': recipients,
+            'subject': subject,
+            'cc': cc,
+            'bcc': bcc,
+            'has_attachments': bool(attachments)
+        })
+    except Exception:
+        # If logging fails, continue silently
+        pass
     
     try:
         mail.send(msg)
         return True
     except Exception as e:
         print(f"Error sending email: {str(e)}")
+        # We silently fail rather than stopping the app functionality
         return False
 
 def send_welcome_email(user, organization):
@@ -524,13 +529,18 @@ def log_action(event_type, event_data=None):
     if not current_user or not current_user.is_authenticated:
         return
     
-    log = Log(
-        organization_id=current_user.organization_id,
-        user_id=current_user.id,
-        event_type=event_type,
-        event_data=json.dumps(event_data) if event_data else None,
-        created_at=datetime.utcnow()
-    )
-    
-    db.session.add(log)
-    db.session.commit()
+    try:
+        log = Log(
+            organization_id=current_user.organization_id,
+            user_id=current_user.id,
+            event_type=event_type,
+            event_data=json.dumps(event_data) if event_data else None,
+            created_at=datetime.utcnow()
+        )
+        
+        db.session.add(log)
+        db.session.commit()
+    except Exception as e:
+        print(f"Error logging action: {str(e)}")
+        # Roll back any failed transaction
+        db.session.rollback()
