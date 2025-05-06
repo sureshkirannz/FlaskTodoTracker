@@ -12,8 +12,9 @@ visitor = Blueprint('visitor', __name__, url_prefix='/visitors')
 @login_required
 def index():
     """List all visitors for the organization"""
-    visitors = Visitor.query.filter_by(organization_id=current_user.organization_id).all()
-    return render_template('visitor/index.html', title='Visitors', visitors=visitors)
+    visitors = Visitor.query.filter_by(organization_id=current_user.organization_id)\
+        .order_by(Visitor.created_at.desc()).all()
+    return render_template('visitor/index.html', title='Visitors', visitors=visitors, now=datetime.utcnow)
 
 @visitor.route('/check-in', methods=['GET', 'POST'])
 @login_required
@@ -25,7 +26,39 @@ def check_in():
                             for s in Staff.query.filter_by(organization_id=current_user.organization_id).all()]
     
     if form.validate_on_submit():
-        # Implementation will be added here
+        # Check if visitor already exists
+        visitor = Visitor.query.filter_by(
+            email=form.email.data,
+            organization_id=current_user.organization_id
+        ).first() if form.email.data else None
+        
+        # Create new visitor if they don't exist
+        if not visitor:
+            visitor = Visitor(
+                first_name=form.first_name.data,
+                last_name=form.last_name.data,
+                email=form.email.data,
+                phone=form.phone.data,
+                company=form.company.data,
+                organization_id=current_user.organization_id,
+                created_at=datetime.utcnow()
+            )
+            db.session.add(visitor)
+            db.session.flush()  # Get ID without committing
+        
+        # Create check-in record
+        checkin = CheckIn(
+            visitor_id=visitor.id,
+            staff_id=form.staff_id.data,
+            purpose=form.purpose.data,
+            check_in_time=datetime.utcnow()
+        )
+        db.session.add(checkin)
+        db.session.commit()
+        
+        # Send notifications
+        send_checkin_notification(checkin)
+        
         flash('Visitor checked in successfully', 'success')
         return redirect(url_for('visitor.index'))
     
