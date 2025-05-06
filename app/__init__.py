@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
 from flask_mail import Mail
+from flask_wtf.csrf import CSRFProtect
 
 class Base(DeclarativeBase):
     pass
@@ -21,6 +22,9 @@ login_manager.login_message_category = 'info'
 # Initialize Flask-Mail
 mail = Mail()
 
+# Initialize CSRF protection
+csrf = CSRFProtect()
+
 def create_app():
     """Create and configure the Flask application"""
     app = Flask(__name__)
@@ -28,6 +32,9 @@ def create_app():
     # Load configuration from environment variables or use defaults
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY', 'dev_key_for_testing'),
+        WTF_CSRF_SECRET_KEY=os.environ.get('WTF_CSRF_SECRET_KEY', 'csrf_key_for_forms'),
+        WTF_CSRF_ENABLED=True,
+        WTF_CSRF_TIME_LIMIT=3600,  # 1 hour
         SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'postgresql://postgres:1234567@159.13.60.81:5432/VisitorManagement'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ENGINE_OPTIONS={
