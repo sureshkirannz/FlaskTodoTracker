@@ -52,7 +52,7 @@
                         <td>{{ staff_member.position or 'N/A' }}</td>
                         <td>
                             <div class="btn-group">
-                                <a href="{{ url_for('staff.edit_staff', staff_id=staff_member.id) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ url_for('staff.edit', id=staff_member.id) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteStaffModal{{ staff_member.id }}">
